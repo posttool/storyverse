@@ -28,10 +28,10 @@ function $$(o) {
     return $t;
 }
 
-var dropped = false;
 var characters = [];
 var settings = [];
 
+var dropped = false;
 function handleDragStart(e) {
     this.style.opacity = '0.4';
     e.dataTransfer.setData("color", this.style.backgroundColor);
@@ -89,11 +89,13 @@ function change_framework(e) {
 // state 2 // timeline
 var $stage = $('stage-body');
 var $button_done = $("button-done");
+var $framework = $("framework");
 var $instruction = $("instruction");
 var populatef = null;
 function showTimeline() {
     $instruction.innerText = 'Select framework and have fun'
     $button_done.style.visibility = 'hidden';
+    $framework.style.visibility = 'visible';
     $stage.classList.remove('bigpad');
     $stage.style.display = 'block';
     $stage.innerHTML = '';
@@ -121,10 +123,12 @@ function showTimeline() {
     addDragger($t1.container, $t2.container);
     addDragger($t2.container, $t3.container);
 
-    // for all targets in t1,2,3 - "listen" to change events
+    // for all bg & targets in t1,2,3 - "listen" to change events
+    $t1.change = (section) =>  _redraw(section);
+    $t2.change = (section) =>  _redraw(section);
+    $t3.change = (section) =>  _redraw(section);
     for (var k in _all_targets) {
         _all_targets[k].change = (t) => {
-            console.log(t.section)
             _redraw(t.section);
         }
     }
@@ -147,7 +151,7 @@ function showTimeline() {
         var c01 = section.targets[1].getValue().index;
         var $ft = $$({ el: 'span' });
         if (c00 == -1 && c01 == -1) {
-
+            // nada
         } else if (c00 == -1 && c01 != -1) {
             format('Minor ', null, $ft);
             format(SB[c01].name, SB[c01].color, $ft);
@@ -160,6 +164,9 @@ function showTimeline() {
             format(' and minor ', null, $ft);
             format(SB[c01].name, SB[c01].color, $ft);
         }
+        var s00 = section.getValue().index;
+        format(' in setting ', null, $ft);
+        format(SB[s00].name, SB[s00].color, $ft);
         section.text_container.innerText = '';
         section.text_container.appendChild($ft);
     }
@@ -168,10 +175,17 @@ function showTimeline() {
         while (characters.length < 2) {
             characters.push(Math.round(Math.random()*SB.length));
         }
-        var c1 = characters[1], c2 = characters[0];
+        while (settings.length < 1) {
+            settings.push(Math.round(Math.random()*SB.length));
+        }
+        // insert these characters into the "template"
+        var c1 = characters[1], c2 = characters[0]; 
+        $t1.setValue(settings[0]);
         $t1.targets[0].setValue(c1);
+        $t2.setValue(settings[0]);
         $t2.targets[0].setValue(c2);
         $t2.targets[1].setValue(c1);
+        $t3.setValue(settings[0]);
         $t3.targets[0].setValue(c1);
         _redraw();
     }
@@ -186,16 +200,44 @@ function format(str, color, parent) {
 }
 
 function addTimelineSection(parent, name, description) {
+    var value = {index: -1};
     var $s = $$({ class: 'section', parent: parent });
+    var $drop = $$({parent: $s});
+    $$({class: 'top', parent: $drop});
+    $$({class: 'right', parent: $drop});
+    $$({class: 'bottom', parent: $drop});
+    $$({class: 'left', parent: $drop});
     var $l = $$({ class: 'label', parent: $s, text: name });
     var $c1 = addTarget('major-container', $s);
     var $c2 = addTarget('minor-container', $s);
     var $l = $$({ class: 'description', parent: $s, text: description });
+    function _redraw() {
+        $s.style.backgroundColor = SB[value.index].color+"33";
+    }
+    $drop.addEventListener('drop', (e) => {
+        e.preventDefault();
+        value.index = Number(e.dataTransfer.getData('idx').substring(2));
+        if (section_closure.change) {
+            section_closure.change(section_closure);
+        }
+        _redraw();
+    });
+    $drop.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        return false;
+    });
     var section_closure = {
         name: name,
         container: $s,
         text_container: $l,
-        targets: [$c1, $c2]
+        targets: [$c1, $c2],
+        setValue: (idx) => {
+            value.index = idx;
+            _redraw();
+        },
+        getValue: () => {
+            return value; //return target values?
+        }
     };
     $c1.section = section_closure;
     $c2.section = section_closure;
@@ -232,13 +274,9 @@ function addTarget(classname, $parent) {
         var origin_target = _all_targets[e.dataTransfer.getData('originElId')];
         if (origin_target) {
             origin_target.setValue(-1);
-            if (origin_target.change) {
-                origin_target.change(origin_target);
-            }
+            if (origin_target.change) origin_target.change(origin_target);
         }
-        if (target_closure.change) {
-            target_closure.change(target_closure);
-        }
+        if (target_closure.change) target_closure.change(target_closure);
     });
     $c1.addEventListener('dragover', (e) => {
         e.preventDefault();
@@ -251,7 +289,7 @@ function addTarget(classname, $parent) {
         e.dataTransfer.setData("originElId", elId);
     });
     $c13.addEventListener('dragend', (e) => {
-        // _redraw($c13); // TODO handle situ where item wasnt dropped on a valid target
+        _redraw($c13); // TODO handle situ where item wasnt dropped on a valid target
     });
 
     var target_closure = {
@@ -292,6 +330,6 @@ function addDragger(left, right) {
     return $s;
 }
 
-// characters = [0, 2];
-// settings = [3];
-// showTimeline();
+characters = [0, 2];
+settings = [4];
+showTimeline();
