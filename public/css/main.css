@@ -16,6 +16,7 @@
     box-sizing: border-box;
     text-rendering: geometricPrecision;
     /* color: #ACACBE; */
+    user-select: none; 
 }
 
 body {
@@ -210,6 +211,10 @@ button.green {
     font-size: 14px;
 }
 
+.section .description span {
+    font-size: 14px;
+}
+
 .section .major-container {
     position: absolute;
     top: 25px;
@@ -230,7 +235,6 @@ button.green {
     height: var(--cbig);
     top: 0;
     left: calc(50% - calc(var(--cbig) / 2));
-    z-index: 10;
 }
 
 .section .major1 {
@@ -241,7 +245,6 @@ button.green {
     height: var(--cmedium);
     top: calc((var(--cbig) - var(--cmedium)) / 2);
     left: calc(50% - calc(var(--cmedium) / 2));
-    z-index: 10;
 }
 
 .section .major2 {
@@ -252,7 +255,6 @@ button.green {
     height: var(--csmall);
     top: calc((var(--cbig) - var(--csmall)) / 2);
     left: calc(50% - calc(var(--csmall) / 2));
-    z-index: 10;
 }
 
 
@@ -264,7 +266,7 @@ button.green {
     top: calc((var(--cbig) - var(--cmedium)) / 2);
     left: calc(50% - calc(var(--cmedium) / 2));
     background-color: #f00;
-    z-index: 0;
+    opacity: 0;
 }
 
 .dragger {
