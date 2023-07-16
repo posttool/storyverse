@@ -28,6 +28,12 @@ function $$(o) {
     return $t;
 }
 
+
+function format(str, color, parent) {
+    return $$({ el: 'span', text: str, parent: parent, color: color });
+}
+
+
 var characters = [];
 var settings = [];
 
@@ -35,7 +41,7 @@ var dropped = false;
 function handleDragStart(e) {
     this.style.opacity = '0.4';
     e.dataTransfer.setData("color", this.style.backgroundColor);
-    e.dataTransfer.setData("idx", this.id);
+    e.dataTransfer.setData("idx", this.id.substring(2));
 }
 
 function handleDragEnd(e) {
@@ -56,7 +62,7 @@ function drop(e) {
     e.target.style.border = '0'
     $("button-done").style.visibility = 'visible';
     dropped = true;
-    var idx = Number(e.dataTransfer.getData("idx").substring(2));
+    var idx = Number(e.dataTransfer.getData("idx"));
     if (e.target.className == 'place') {
         characters.push(idx);
     } else {
@@ -99,235 +105,29 @@ function showTimeline() {
     $stage.classList.remove('bigpad');
     $stage.style.display = 'block';
     $stage.innerHTML = '';
-    var $top = $$({ class: 'timeline-top', parent: $stage });
-    // $$({ text: 'Character(s):', parent: $top });
-    // for (var i = 0; i < characters.length; i++) {
-    //     var $p = $$({ parent: $top, class: 'place-small' });
-    //     $p.style.backgroundColor = SB[characters[i]].color;
-    // }
-    // $$({ text: 'Setting(s):', parent: $top }).style.paddingLeft = '15px';
-    // for (var i = 0; i < settings.length; i++) {
-    //     var $p = $$({ parent: $top, class: 'placesq-small' });
-    //     $p.style.backgroundColor = SB[settings[i]].color;
-    // }
-    var $climax = $$({ class: 'timeline-climax', parent: $stage });
-    var $mid = $$({ class: 'timeline-mid', parent: $stage });
-    var $labels = $$({ class: 'timeline-labels', parent: $mid })
-    var $major = $$({ class: 'major', parent: $labels, text: 'Main' })
-    var $minor = $$({ class: 'minor', parent: $labels, text: 'Minor' })
-    var $major = $$({ class: 'major-line', parent: $labels })
-    var $minor = $$({ class: 'minor-line', parent: $labels })
-    var $t1 = addTimelineSection($mid, 'Beginning', '');
-    var $t2 = addTimelineSection($mid, 'Middle', '');
-    var $t3 = addTimelineSection($mid, 'End', '');
-    addDragger($t1.container, $t2.container);
-    addDragger($t2.container, $t3.container);
-
-    // for all bg & targets in t1,2,3 - "listen" to change events
-    $t1.change = (section) =>  _redraw(section);
-    $t2.change = (section) =>  _redraw(section);
-    $t3.change = (section) =>  _redraw(section);
-    for (var k in _all_targets) {
-        _all_targets[k].change = (t) => {
-            _redraw(t.section);
-        }
-    }
-
-    // update text based on (new) values
-    function _redraw(section) {
-        if (!section) {
-            _redraw($t1);
-            _redraw($t2);
-            _redraw($t3);
-        } else {
-            _regen_text(section);
-        }
-    }
-
-    function _regen_text(section) {
-        // TODO format a prompt & send to service for results
-        // currently displays the prompt
-        var c00 = section.targets[0].getValue().index;
-        var c01 = section.targets[1].getValue().index;
-        var $ft = $$({ el: 'span' });
-        if (c00 == -1 && c01 == -1) {
-            // nada
-        } else if (c00 == -1 && c01 != -1) {
-            format('Minor ', null, $ft);
-            format(SB[c01].name, SB[c01].color, $ft);
-        } else if (c00 != -1 && c01 == -1) {
-            format('Main ', null, $ft);
-            format(SB[c00].name, SB[c00].color, $ft);
-        } else {
-            format('Main ', null, $ft);
-            format(SB[c00].name, SB[c00].color, $ft);
-            format(' and minor ', null, $ft);
-            format(SB[c01].name, SB[c01].color, $ft);
-        }
-        var s00 = section.getValue().index;
-        format(' in setting ', null, $ft);
-        format(SB[s00].name, SB[s00].color, $ft);
-        section.text_container.innerText = '';
-        section.text_container.appendChild($ft);
-    }
+   
+    var editor = new Storyline($stage);
 
     populatef = () => {
         while (characters.length < 2) {
-            characters.push(Math.round(Math.random()*SB.length));
+            characters.push(Math.round(Math.random() * SB.length));
         }
         while (settings.length < 1) {
-            settings.push(Math.round(Math.random()*SB.length));
+            settings.push(Math.round(Math.random() * SB.length));
         }
         // insert these characters into the "template"
-        var c1 = characters[1], c2 = characters[0]; 
-        $t1.setValue(settings[0]);
-        $t1.targets[0].setValue(c1);
-        $t2.setValue(settings[0]);
-        $t2.targets[0].setValue(c2);
-        $t2.targets[1].setValue(c1);
-        $t3.setValue(settings[0]);
-        $t3.targets[0].setValue(c1);
-        _redraw();
+        var s0 = settings[0], c1 = characters[1], c2 = characters[0];
+        editor.sections[0].value.index = s0;
+        editor.sections[0].targets[0].value.index = c1;
+        editor.sections[1].value.index = s0;
+        editor.sections[1].targets[0].value.index = c2;
+        editor.sections[1].targets[1].value.index = c1;
+        editor.sections[2].value.index = s0;
+        editor.sections[2].targets[0].value.index = c1;
+        editor.redraw();
+        
     }
 
-}
-
-function format(str, color, parent) {
-    var $s = $$({ el: 'span', text: str, parent: parent });
-    if (color)
-        $s.style.color = color;
-    return $s;
-}
-
-function addTimelineSection(parent, name, description) {
-    var value = {index: -1};
-    var $s = $$({ class: 'section', parent: parent });
-    var $drop = $$({parent: $s});
-    $$({class: 'top', parent: $drop});
-    $$({class: 'right', parent: $drop});
-    $$({class: 'bottom', parent: $drop});
-    $$({class: 'left', parent: $drop});
-    var $l = $$({ class: 'label', parent: $s, text: name });
-    var $c1 = addTarget('major-container', $s);
-    var $c2 = addTarget('minor-container', $s);
-    var $l = $$({ class: 'description', parent: $s, text: description });
-    function _redraw() {
-        $s.style.backgroundColor = SB[value.index].color+"33";
-    }
-    $drop.addEventListener('drop', (e) => {
-        e.preventDefault();
-        value.index = Number(e.dataTransfer.getData('idx').substring(2));
-        if (section_closure.change) {
-            section_closure.change(section_closure);
-        }
-        _redraw();
-    });
-    $drop.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        return false;
-    });
-    var section_closure = {
-        name: name,
-        container: $s,
-        text_container: $l,
-        targets: [$c1, $c2],
-        setValue: (idx) => {
-            value.index = idx;
-            _redraw();
-        },
-        getValue: () => {
-            return value; //return target values?
-        }
-    };
-    $c1.section = section_closure;
-    $c2.section = section_closure;
-    return section_closure;
-}
-
-var _all_targets = {};
-var _all_targets_count = 0;
-function addTarget(classname, $parent) {
-    var value = { index: -1, size: 1 };
-    var elId = '_target_' + (_all_targets_count++);
-    var $c1 = $$({ class: classname, parent: $parent, id: elId });
-    var $c10 = $$({ class: 'major', parent: $c1 });
-    var $c11 = $$({ class: 'major1', parent: $c1 });
-    var $c12 = $$({ class: 'major2', parent: $c1 });
-    var $c13 = $$({ class: 'char', parent: $c1 });
-    function _setValue($el, index, size) {
-        value.index = index;
-        value.size = size;
-        _redraw($el);
-    }
-    function _redraw($el) {
-        if (value.index == -1) {
-            $el.style.opacity = 0;
-        } else {
-            $el.style.backgroundColor = SB[value.index].color;
-            $el.style.opacity = 1;
-        }
-    }
-    // DnD handling
-    $c1.addEventListener('drop', (e) => {
-        e.preventDefault();
-        _setValue($c13, Number(e.dataTransfer.getData('idx').substring(2)), -1);
-        var origin_target = _all_targets[e.dataTransfer.getData('originElId')];
-        if (origin_target) {
-            origin_target.setValue(-1);
-            if (origin_target.change) origin_target.change(origin_target);
-        }
-        if (target_closure.change) target_closure.change(target_closure);
-    });
-    $c1.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        return false;
-    });
-    $c13.draggable = "true";
-    $c13.addEventListener('dragstart', (e) => {
-        $c13.style.opacity = '0.4';
-        e.dataTransfer.setData("idx", "c_" + value.index);
-        e.dataTransfer.setData("originElId", elId);
-    });
-    $c13.addEventListener('dragend', (e) => {
-        _redraw($c13); // TODO handle situ where item wasnt dropped on a valid target
-    });
-
-    var target_closure = {
-        container: $c1,
-        setValue: (index, size) => {
-            _setValue($c13, index, size)
-        },
-        getValue: () => {
-            return value;
-        }
-    };
-    _all_targets[elId] = target_closure;
-    return target_closure;
-}
-
-function addDragger(left, right) {
-    var clickx = 0, leftw = 0, rightw = 0;
-    var $s = $$({ class: 'dragger' });
-    left.after($s);
-    function _dragging(e) {
-        var d = (e.screenX - clickx);
-        if (leftw + d < 70 || leftw + d > 270) {
-            return;
-        }
-        left.style.width = (leftw + d) + 'px'
-        right.style.width = (rightw - d) + 'px'
-    }
-    $s.addEventListener('mousedown', (e) => {
-        leftw = left.offsetWidth;
-        rightw = right.offsetWidth;
-        clickx = e.screenX;
-        window.document.addEventListener('mousemove', _dragging)
-    })
-
-    window.document.addEventListener('mouseup', (e) => {
-        window.document.removeEventListener('mousemove', _dragging);
-    })
-    return $s;
 }
 
 characters = [0, 2];
