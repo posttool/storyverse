@@ -1,0 +1,33 @@
+{
+  "name": "storyverser",
+  "version": "0.0.1",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "build": "webpack",
+    "start": "webpack --watch --progress",
+    "visualize-bundle": "webpack --analyze"
+  },
+  "author": "David Karam",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "webpack": "^5.88.2",
+    "webpack-bundle-analyzer": "^4.9.0",
+    "webpack-cli": "^5.1.4"
+  },
+  "dependencies": {
+    "firebase": "^9.0.0",
+    "firebase-admin": "^11.10.1",
+    "firebase-functions": "^4.4.1",
+    "javascript-time-ago": "^2.5.9"
+  },
+  "main": "webpack.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/posttool/storyverse.git"
+  },
+  "bugs": {
+    "url": "https://github.com/posttool/storyverse/issues"
+  },
+  "homepage": "https://github.com/posttool/storyverse#readme"
+}

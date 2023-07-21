@@ -1,42 +1,18 @@
-
-class Component {
-    constructor(el_options) {
-        this.parent = null;
-        this.listeners = {};
-        this.el = $$(el_options);
-        this.value = null;
-    }
+import { $, $$, format, Component } from './utils.js';
 
 
-    draw() { }
-    redraw() { }
-
-    addListener(type, func) {
-        if (!this.listeners[type]) {
-            this.listeners[type] = [];
-        }
-        this.listeners[type].push(func);
-    }
-
-    emit(type, value) {
-        var funcs = this.listeners[type];
-        if (funcs) {
-            for (var i = 0; i < funcs.length; i++) {
-                funcs[i](value, this);
-            }
-        }
-    }
-}
-
-class Storyline extends Component {
-    constructor(rootEl) {
-        super({ parent: rootEl, class: 'storyline' });
+export class Storyline extends Component {
+    constructor(parent) {
+        super({ parent: $('editor'), class: 'storyline' });
+        this.parent = parent;
         this.sections = [];
         this.targets = {};
+        this.framework = null;
         this.draw();
     }
 
     draw() {
+        var $top = $$({ class: 'timeline-top', parent: this.el });
         var $climax = $$({ class: 'timeline-climax', parent: this.el });
         this.midEl = $$({ class: 'timeline-mid', parent: this.el });
         var $labels = $$({ class: 'timeline-labels', parent: this.midEl })
@@ -88,10 +64,10 @@ class Storyline extends Component {
             rightW = rightEl.offsetWidth;
             clickX = e.screenX;
             window.document.addEventListener('mousemove', _dragging)
-        })
+        });
         window.document.addEventListener('mouseup', (e) => {
             window.document.removeEventListener('mousemove', _dragging);
-        })
+        });
     }
 
     addTarget(t) {
@@ -105,6 +81,8 @@ class Storyline extends Component {
     getTarget(uuid) {
         return this.targets[uuid];
     }
+
+
 }
 
 class StorylineSection extends Component {
@@ -114,6 +92,7 @@ class StorylineSection extends Component {
         this.name = name;
         this.value = { index: -1 }; // the scrapbook index for the 'setting' of this section
         this.targets = []; // the main & minor characters
+        this.writingInstruction = null; // the instruction for the llm
         this.draw();
     }
 
@@ -156,36 +135,56 @@ class StorylineSection extends Component {
         var do3 = SB[this.value.index];
         this.labelEl.innerText = this.name;
         // build label (todo call service for results)
+
+        var txt = 'Write the ' + this.name + ' of a story in 2 sentences using this storytelling framework: ' + this.parent.framework + '. ';
         var $ft = $$({ el: 'span' });
         if (c00 == -1 && c01 == -1) {
             format('No one ', null, $ft);
+            txt += 'There are no characters.';
         } else if (c00 == -1 && c01 != -1) {
             format('Minor ', null, $ft);
             format(do1.name, do1.color, $ft);
+            txt += 'There is a minor character named ' + do1.name + '. ';
         } else if (c00 != -1 && c01 == -1) {
             format('Main ', null, $ft);
             format(do2.name, do2.color, $ft);
+            txt += 'The protagonist is named ' + do2.name + '. ';
         } else {
             format('Main ', null, $ft);
             format(do2.name, do2.color, $ft);
             format(' and minor ', null, $ft);
             format(do1.name, do1.color, $ft);
+            txt += 'The protagonist is named ' + do2.name +
+                ' and a support character is named ' + do1.name + '. ';
         }
         if (do3) {
             this.el.style.backgroundColor = do3.color + "33";
             format(' in setting ', null, $ft);
             format(do3.name, do3.color, $ft);
+            txt += 'The scene is in this setting: ' + do3.name + '. ';
         }
+        this.writingInstruction = txt;
+
         this.descriptionEl.innerHTML = '';
         this.descriptionEl.appendChild($ft);
 
         this.targets.forEach(target => {
             target.redraw();
         });
+
+    }
+
+    format(s) {
+        // find and replace entities with colors
+        this.descriptionEl.innerHTML = '';
+        this.descriptionEl.appendChild($$({ el: 'span', text: s }));
     }
 
 
 }
+
+
+
 
 class Target extends Component {
     constructor(parent, name) {

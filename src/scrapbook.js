@@ -1,5 +1,5 @@
 
-const SB = [
+export const SB = [
     { type: 'Cat', name: 'Motor', color: '#DA4B4B' },
     { type: 'Kid', name: 'Julian', color: '#FF7F50' },
     { type: 'Kid', name: 'Lucas', color: '#FF7F50' },
