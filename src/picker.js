@@ -49,9 +49,6 @@ export class Picker extends Component {
         this.objects.addListener('select', (e) => {
             this.redraw();
         });
-        this.objects.addListener('add', (e) => {
-            this.showPickerForm();
-        });
         this.objects.addListener('click', (e) => {
             this.showPickerForm(e);
         });
@@ -132,10 +129,10 @@ export class PickerCell extends Component {
         this.toggle.addListener('change', v => {
             this.emit('change');
         });
-        this.el.addEventListener('click', e => {
-            this.emit('click');
-        });
-        this.el.addEventListener('doubleclick', e => {
+        // this.el.addEventListener('click', e => {
+        //     this.emit('click');
+        // });
+        this.el.addEventListener('dblclick', e => {
             this.emit('click');
         })
     }
