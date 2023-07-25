@@ -13,8 +13,6 @@ import {
     limitToLast,
     onSnapshot,
     getDocs,
-    setDoc,
-    updateDoc,
     doc,
     getDoc,
     serverTimestamp,
@@ -34,7 +32,7 @@ export class Picker extends Component {
         // this.collapseEl = $$mi({ parent: this.toolbarEl, class: 'button-collapse', text: 'chevron_left' });
         this.objects = new List({ parent: this.el, class: 'picker-list' }, PickerCell);
         this.add = new PickerAddCell(this);
-        this.formsEl = $$({parent: $('editor')});
+        this.formsEl = $$({ parent: $('editor') });
 
         this.delEl.addEventListener('click', (e) => {
             this.delEl.innerText = 'sync';
@@ -53,7 +51,7 @@ export class Picker extends Component {
         this.objects.addListener('click', (e) => {
             this.showPickerForm(e);
         });
-        this.add.addListener('click', e=>{
+        this.add.addListener('click', e => {
             this.showPickerForm();
         });
 
@@ -100,7 +98,7 @@ export class Picker extends Component {
         form.redraw();
     }
 
-    visible(b){
+    visible(b) {
         super.visible(b);
         super.visible(b, this.formsEl);
     }
@@ -113,8 +111,10 @@ export class Picker extends Component {
 
     draggable(b) {
         this.objects.selectable(!b);
+        this.objects.draggable(b);
         this.add.visible(!b);
         super.visible(!b, this.formsEl);
+        // this.el.width = b ? '80px' : '280px';
     }
 }
 
@@ -141,7 +141,7 @@ export class PickerCell extends Component {
         // });
         this.el.addEventListener('dblclick', e => {
             this.emit('click');
-        })
+        });
     }
 
     redraw() {
@@ -150,10 +150,28 @@ export class PickerCell extends Component {
 
     selectable(b) {
         this.toggle.visible(b);
+        this.visible(b, this.textEl);
         if (!b)
             this.el.classList.add('picker-cell-min');
         else
             this.el.classList.remove('picker-cell-min');
+    }
+    draggable(b) {
+        if (b) {
+            this.iconEl.draggable = 'true';
+            this.iconEl.addEventListener('dragstart', this._dragstart.bind(this));
+            this.iconEl.addEventListener('dragend', this._dragend.bind(this));
+        } else {
+            this.iconEl.draggable = 'false';
+            this.iconEl.removeEventListener('dragstart', this._dragstart);
+            this.iconEl.removeEventListener('dragend', this._dragend);
+        }
+    }
+    _dragstart(e) {
+        e.dataTransfer.setData("id", this.value.id);
+    }
+    _dragend(e) {
+       console.log("dragend>"+e.dataTransfer.getData("id"));
     }
 }
 
@@ -181,10 +199,14 @@ export class PickerForm extends Component {
     constructor(parentEl, parentComponent) {
         super({ parent: parentEl, class: 'picker-form' }, parentComponent);
         this.types = ['person', 'animal', 'plant', 'thing', 'place', 'idea'];
+        this.waiting = false;
+        this.waitingQueued = false;
         this.draw();
     }
 
     draw() {
+        var $r0 = $$({ parent: this.el, class: 'row' });
+        this.closeButton = $$mi({ parent: $r0, text: 'close' });
         var $r1 = $$({ parent: this.el, class: 'row' });
         $$({ parent: $r1, text: 'Type', class: 'form-label' })
         this.typeEl = $$sel({ parent: $r1, options: this.types });
@@ -197,12 +219,20 @@ export class PickerForm extends Component {
         var $r4 = $$({ parent: this.el, class: 'row' });
         $$({ parent: $r4, text: 'Color', class: 'form-label' })
         this.colors = new Colors($r4);
+
+        //
+        this.closeButton.addEventListener('click', e => { this.parent.remove(this); });
         this.colors.addListener('change', this.setValueFromUi.bind(this));
         this.nameEl.addEventListener('change', this.setValueFromUi.bind(this));
         this.descriptionEl.addEventListener('change', this.setValueFromUi.bind(this));
     }
 
     setValueFromUi() {
+        if (this.waiting) {
+            this.waitingQueued = true;
+            return;
+        }
+        this.waiting = true;
         this.value = {
             id: this.value ? this.value.id : null,
             type: this.typeEl.options[this.typeEl.selectedIndex].text,
@@ -213,6 +243,11 @@ export class PickerForm extends Component {
         this.parent.services.Picker.Update(this.value).then(results => {
             this.value.id = results.data.id;
             this.redraw();
+            this.waiting = false;
+            if (this.waitingQueued) {
+                this.waitingQueued = false;
+                this.setValueFromUi();
+            }
         });
     }
 

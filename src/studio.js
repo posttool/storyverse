@@ -44,12 +44,14 @@ export class Studio extends Component {
                 this.picker.toolbar(true);
                 this.picker.draggable(false);
                 this.editor.visible(false);
+                $('picker').style.width = '282px';
                 break;
             case MIXER:
                 this.picker.visible(true);
                 this.picker.toolbar(false);
                 this.picker.draggable(true);
                 this.editor.visible(true);
+                $('picker').style.width = '100px';
                 break;
             case PLAYER:
                 this.picker.visible(false);

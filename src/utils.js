@@ -90,6 +90,17 @@ export class Component {
         }
     }
 
+    remove(c) {
+        c.el.remove();
+        if (this.children) {
+            var idx = this.children.indexOf(c);
+            if (idx == -1) {
+                return;
+            }
+            this.children.splice(idx, 1);
+        }
+    }
+
 }
 
 
@@ -151,6 +162,11 @@ export class List extends Component {
     selectable(b) {
         this.children.forEach((item, index) => {
             item.selectable(b);
+        });
+    }
+    draggable(b) {
+        this.children.forEach((item, index) => {
+            item.draggable(b);
         });
     }
 }
