@@ -65,14 +65,13 @@ export class Storyline extends Component {
         });
     }
 
-  
+
 
 }
 
 class StorylineSection extends Component {
     constructor(parent, name) {
-        super({ class: 'section', parent: parent.midEl });
-        this.parent = parent;
+        super({ class: 'section', parent: parent.midEl }, parent);
         this.name = name;
         this.value = { index: -1 }; // the scrapbook index for the 'setting' of this section
         this.targets = []; // the main & minor characters
@@ -80,8 +79,6 @@ class StorylineSection extends Component {
         this.writingInstruction = null; // the instruction for the llm
         this.draw();
     }
-
-
 
     draw() {
         var charactersEl = $$({ parent: this.el, class: 'characters' });
@@ -94,7 +91,7 @@ class StorylineSection extends Component {
         // DnD setup
         charactersEl.addEventListener('drop', (e) => {
             e.preventDefault();
-            this.dropCharacter(charactersEl, e.dataTransfer.getData('id'));
+            this.dropCharacter(charactersEl, e.dataTransfer.getData('id'), { x: e.offsetX - 15, y: e.offsetY - 15 });
             this.emit('change', this);
         });
         charactersEl.addEventListener('dragover', (e) => {
@@ -116,16 +113,19 @@ class StorylineSection extends Component {
         this.writingInstruction = 'hi';
         this.descriptionEl.innerHTML = '';
         // this.descriptionEl.appendChild($ft);
-
     }
 
-    dropCharacter(el, id) {
-        var t = new Target(el, id);
-        this.targets.push(t);
+    dropCharacter(el, id, p) {
+        var t = this.targets[id];
+        if (t == null) {
+            t = new Target(el, this.parent.parent.picker.objects.getValueById(id));
+            this.targets[id] = t;
+        }
+        t.position(p);
     }
 
     dropSetting(el, id) {
-        var t = new Target(el, id);
+        var t = new Target(el, this.parent.parent.picker.objects.getValueById(id));
         this.settings.push(t);
     }
 
@@ -136,10 +136,11 @@ class StorylineSection extends Component {
 
 
 class Target extends Component {
-    constructor(el, id) {
+    constructor(el, data) {
         super({ parent: el });
-        this.value = { id: id, size: 1 };
+        this.value = { data: data, size: 1 };
         this.draw();
+        this.redraw();
     }
 
     draw() {
@@ -168,18 +169,24 @@ class Target extends Component {
         this.$c13.draggable = "true";
         this.$c13.addEventListener('dragstart', (e) => {
             this.$c13.style.opacity = '0.4';
-            e.dataTransfer.setData('id', this.value.id);
+            e.dataTransfer.setData('id', this.value.data.id);
         });
         this.$c13.addEventListener('dragend', (e) => {
             this.redraw(); // TODO handle situ where item wasnt dropped on a valid target
         });
     }
 
+    position(p) {
+        this.$c13.style.position = 'absolute';
+        this.$c13.style.left = p.x + 'px';
+        this.$c13.style.top = p.y + 'px';
+    }
+
     redraw() {
         if (this.value.index == -1) {
             this.$c13.style.opacity = 0;
         } else {
-            this.$c13.style.backgroundColor = this.value.color;
+            this.$c13.style.backgroundColor = this.value.data.color;
             this.$c13.style.opacity = 1;
         }
     }

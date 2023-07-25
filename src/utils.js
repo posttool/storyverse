@@ -125,8 +125,12 @@ export class List extends Component {
             })
             this.children.push(item);
         });
-       
+
     }
+    getValueById(id) {
+        return this.value[this.getIndexById(id)];
+    }
+
     getIndexById(id) {
         for (var i = 0; i < this.value.length; i++) {
             if (this.value[i].id == id) {
@@ -135,11 +139,13 @@ export class List extends Component {
         }
         return -1;
     }
+
     remove(id) {
         var i = this.getIndexById(id);
         this.value.splice(i, 1);
         this.draw();
     }
+
     update(data, orderField) {
         var i = this.getIndexById(data.id);
         if (i == -1) {
@@ -150,6 +156,7 @@ export class List extends Component {
         this.value.sort((a, b) => (a[orderField] > b[orderField]) ? 1 : -1)
         this.draw();
     }
+
     getSelected() {
         var c = [];
         this.children.forEach((item, index) => {
@@ -159,11 +166,13 @@ export class List extends Component {
         });
         return c;
     }
+
     selectable(b) {
         this.children.forEach((item, index) => {
             item.selectable(b);
         });
     }
+    
     draggable(b) {
         this.children.forEach((item, index) => {
             item.draggable(b);
