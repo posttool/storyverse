@@ -15,7 +15,16 @@ export class Studio extends Component {
         this.services = services;
 
         this.account = new Account(this);
+
+
+
         this.account.addListener('login', e => {
+            $("not-logged-in").innerHTML = '';
+            $("main-tabs").innerHTML = '';
+            this.mainTabs = new MainTabs(this);
+            this.mainTabs.addListener('change', value => {
+                this.redraw();
+            });
             this.mainTabs.value = PICKER; // TODO save/restore state
             this.mainTabs.redraw();
             this.picker = new Picker(this);
@@ -27,14 +36,12 @@ export class Studio extends Component {
             this.player.visible(false);
         });
         this.account.addListener('logout', e => {
+            $("not-logged-in").innerHTML = '<img src="img/tape.png"><div class="title">Make &amp; mix stories by playing with shapes</div>';
+            $("main-tabs").innerHTML = '';
             $("picker").innerHTML = '';
             $("editor").innerHTML = '';
         });
 
-        this.mainTabs = new MainTabs(this);
-        this.mainTabs.addListener('change', value => {
-            this.redraw();
-        })
     }
 
     redraw() {

@@ -59,6 +59,14 @@ body {
     letter-spacing: -2.8px;
 }
 
+.title {
+    font-family: PPAcma;
+    font-size: 35px;
+    font-style: normal;
+    font-weight: 100;
+
+}
+
 .user-container {
     display: flex;
     flex-direction: row-reverse;
