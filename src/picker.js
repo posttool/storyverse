@@ -24,7 +24,7 @@ import {
 export class Picker extends Component {
     constructor(parent) {
         super({ parent: $('picker'), class: 'picker' }, parent);
-        this.collapsed = false;
+        this.forms = [];
         this.draw();
     }
 
@@ -34,6 +34,7 @@ export class Picker extends Component {
         // this.collapseEl = $$mi({ parent: this.toolbarEl, class: 'button-collapse', text: 'chevron_left' });
         this.objects = new List({ parent: this.el, class: 'picker-list' }, PickerCell);
         this.add = new PickerAddCell(this);
+        this.formsEl = $$({parent: $('editor')});
 
         this.delEl.addEventListener('click', (e) => {
             this.delEl.innerText = 'sync';
@@ -92,15 +93,20 @@ export class Picker extends Component {
     }
 
     showPickerForm(index) {
-        this.picker = new PickerForm(this.parent);
+        var form = new PickerForm(this.formsEl, this.parent);
         if (index != null) {
-            this.picker.value = this.objects.value[index]
+            form.value = this.objects.value[index]
         }
-        this.picker.redraw();
+        form.redraw();
+    }
+
+    visible(b){
+        super.visible(b);
+        super.visible(b, this.formsEl);
     }
 
     toolbar(b) {
-        this.visible(b, this.toolbarEl);
+        super.visible(b, this.toolbarEl);
         this.objects.selectable(b);
         this.add.visible(b);
     }
@@ -108,6 +114,7 @@ export class Picker extends Component {
     draggable(b) {
         this.objects.selectable(!b);
         this.add.visible(!b);
+        super.visible(!b, this.formsEl);
     }
 }
 
@@ -171,8 +178,8 @@ export class PickerAddCell extends Component {
 
 
 export class PickerForm extends Component {
-    constructor(parent) {
-        super({ parent: $('editor'), class: 'picker-form' }, parent);
+    constructor(parentEl, parentComponent) {
+        super({ parent: parentEl, class: 'picker-form' }, parentComponent);
         this.types = ['person', 'animal', 'plant', 'thing', 'place', 'idea'];
         this.draw();
     }
