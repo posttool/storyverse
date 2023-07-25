@@ -1,5 +1,4 @@
 import { $, $$ } from './utils.js';
-import { SB } from './scrapbook.js';
 import { Studio } from './studio.js';
 import { Storyline } from './editor.js';
 
@@ -19,9 +18,19 @@ if (window.location.hostname.includes("localhost")) {
     connectFunctionsEmulator(firebaseFunctions, "localhost", 5001);
 }
 
-var testGPT = httpsCallable(firebaseFunctions, 'testGPTCallable');
-var studio = new Studio($('root'));
-
+var studio = new Studio({
+    Member: {
+        Init: httpsCallable(firebaseFunctions, 'Member')
+    },
+    GPT: {
+        Test: httpsCallable(firebaseFunctions, 'testGPTCallable')
+    },
+    Picker: {
+        Load: httpsCallable(firebaseFunctions, 'PickerLoad'),
+        Update: httpsCallable(firebaseFunctions, 'PickerUpdate'),
+        Delete: httpsCallable(firebaseFunctions, 'PickerDelete')
+    }
+});
 
 
     // populatef = (framework) => {

@@ -1,32 +1,99 @@
-import { $, Component } from './utils.js';
+import { $, $$, Component, Selected } from './utils.js';
 import { Storyline } from './editor.js';
-import { Picker } from './picker.js';
+import { Picker, PickerForm } from './picker.js';
 import { Preview } from './preview.js';
 import { Account } from './account.js';
 
+const PICKER = 'Power Picker';
+const MIXER = 'Magic Mixer';
+const PLAYER = 'Super Story';
+
+
 export class Studio extends Component {
-    constructor(rootEl) {
+    constructor(services) {
         super({ parent: null, class: 'studio' });
-        var self = this;
-        self.account = new Account(self);
-        self.account.addListener('login', (e) => {
-            self.picker = new Picker(self);
-            self.picker.objects.value = [
-                {type: 'character', name: 'Julian', color: '#FF5555', description: 'Loves to play basketball and read.'},
-                {type: 'character', name: 'Lucas', color: '#55B8FF', description: 'Loves his brother Julian. Loves to swim and draw and cook.'},
-                {type: 'place', name: 'Home', color: '#5566FF', description: 'There home in Los Gatos, which is much more magical than it seems.'}
-            ]
-            //#F1B732
-            //#A055FF
-            //#4BBB78
-            self.picker.objects.draw();
-            // self.editor = new Storyline(self);
-            self.preview = new Preview(self);
+        this.services = services;
+
+        this.account = new Account(this);
+        this.account.addListener('login', e => {
+            this.mainTabs.value = PICKER; // TODO save/restore state
+            this.mainTabs.redraw();
+            this.picker = new Picker(this);
+            this.picker.toolbar(true);
+            this.picker.load();
+            this.editor = new Storyline(this);
+            this.editor.visible(false);
+            this.player = new Preview(this);
+            this.player.visible(false);
         });
-        self.account.addListener('logout', (e) => {
+        this.account.addListener('logout', e => {
             $("picker").innerHTML = '';
             $("editor").innerHTML = '';
         });
+
+        this.mainTabs = new MainTabs(this);
+        this.mainTabs.addListener('change', value => {
+            this.redraw();
+        })
     }
 
+    redraw() {
+        switch (this.mainTabs.value) {
+            case PICKER:
+                this.picker.visible(true);
+                this.picker.toolbar(true);
+                this.picker.draggable(false);
+                this.editor.visible(false);
+                break;
+            case MIXER:
+                this.picker.visible(true);
+                this.picker.toolbar(false);
+                this.picker.draggable(true);
+                this.editor.visible(true);
+                break;
+            case PLAYER:
+                this.picker.visible(false);
+                this.editor.visible(false);
+                break;
+        }
+    }
+
+  
+
+}
+
+
+class MainTabs extends Selected {
+    constructor() {
+        super(
+            { parent: $('main-tabs'), class: 'row' },
+            [PICKER, MIXER, PLAYER],
+            TabCell
+        );
+    }
+}
+
+class TabCell extends Component {
+    constructor(parent, text) {
+        super({ parent: parent.el, class: 'tab' }, parent);
+        this.value = text;
+        this.draw();
+    }
+
+    draw() {
+        this.titleEl = $$({ parent: this.el, class: 'title' });
+        this.titleEl.addEventListener('click', e => {
+            this.emit('click', this);
+        })
+        this.redraw();
+    }
+
+    redraw() {
+        this.titleEl.innerText = this.value;
+        if (this.selected) {
+            this.el.classList.add('selected');
+        } else {
+            this.el.classList.remove('selected');
+        }
+    }
 }

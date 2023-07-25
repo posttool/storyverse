@@ -10,8 +10,7 @@ import { $, $$, $$mi, Component } from './utils.js';
 
 export class Account extends Component {
     constructor(parent) {
-        super({ parent: $('account'), class: 'account-root' });
-        this.parent = parent;
+        super({ parent: $('account'), class: 'account-root' }, parent);
         this.draw();
     }
 
@@ -23,12 +22,13 @@ export class Account extends Component {
         self.userEl = $$({ parent: self.el, class: 'user-container' });
         self.picEl = $$({ parent: self.userEl, class: 'user-pic' });
         self.nameEl = $$({ parent: self.userEl, class: 'user-name' });
-        self.signoutEl = $$mi({ parent: self.userEl, text: 'logout'});
-        self.signinEl = $$mi({ parent: self.userEl, text:'login'});
+        self.signoutEl = $$mi({ parent: self.userEl, text: 'logout' });
+        self.signinEl = $$mi({ parent: self.userEl, text: 'login' });
         self.signoutEl.addEventListener('click', self.doSignOut.bind(self));
         self.signinEl.addEventListener('click', self.doSignIn.bind(self));
 
         onAuthStateChanged(getAuth(), (user) => {
+            console.log(user)
             self.value = user;
             self.redraw();
             if (user != null) {
