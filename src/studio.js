@@ -16,10 +16,8 @@ export class Studio extends Component {
 
         this.account = new Account(this);
 
-
-
         this.account.addListener('login', e => {
-            $("not-logged-in").innerHTML = '';
+            this.visible(false, $("not-logged-in"));
             $("main-tabs").innerHTML = '';
             this.mainTabs = new MainTabs(this);
             this.mainTabs.addListener('change', value => {
@@ -36,7 +34,7 @@ export class Studio extends Component {
             this.player.visible(false);
         });
         this.account.addListener('logout', e => {
-            $("not-logged-in").innerHTML = '<img src="img/tape.png"><div class="title">Make &amp; mix stories by playing with shapes</div>';
+            this.visible(true, $("not-logged-in"));
             $("main-tabs").innerHTML = '';
             $("picker").innerHTML = '';
             $("editor").innerHTML = '';

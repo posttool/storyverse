@@ -1,4 +1,4 @@
-import { $, $$, format, Component } from './utils.js';
+import { $, $$, bzCurve, Component } from './utils.js';
 
 
 export class Storyline extends Component {
@@ -13,9 +13,15 @@ export class Storyline extends Component {
 
     draw() {
         var $top = $$({ class: 'editor-toolbar', parent: this.el });
-        this.midEl = $$({ class: 'timeline-mid', parent: this.el });
-        var $labels = $$({ class: 'timeline-labels', parent: this.midEl })
-        $$({ class: 'center-line', parent: $labels })
+        // todo add selects to top bar
+        this.canvasEl = $$({ class: 'editor-canvas', parent: this.el, el: 'canvas' });
+        this.canvasEl.width = "900";
+        this.canvasEl.height = "600";
+        this.ctx = this.canvasEl.getContext('2d');
+
+        this.midEl = $$({ class: 'editor-mid', parent: this.el });
+        // var $labels = $$({ class: 'editor-labels', parent: this.midEl })
+        // $$({ class: 'center-line', parent: $labels })
         this.addSection(new StorylineSection(this, 'Beginning'));
         this.addSection(new StorylineSection(this, 'Middle'));
         this.addSection(new StorylineSection(this, 'End'));
@@ -38,6 +44,33 @@ export class Storyline extends Component {
                 section.redraw();
             });
         }
+        // curvey lines
+        this.ctx.clearRect(0, 0, 1000, 1000);
+        var uniqueTargets = [];
+        this.sections.forEach(section => {
+            Object.keys(section.targets).forEach(k => {
+                if (uniqueTargets.indexOf(k) == -1) {
+                    uniqueTargets.push(k);
+                }
+            })
+        });
+        uniqueTargets.forEach(id => {
+            var points = [];
+            var color;
+            this.sections.forEach((section, i) => {
+                var t = section.targets[id];
+                if (t) {
+                    var p = {x: t.p.x +  (i * 221) + 20, y: t.p.y + 50 };
+                    points.push(p);
+                    color = t.value.data.color;
+                }
+            });
+            this.ctx.setLineDash([3,3]);
+            this.ctx.lineWidth = 2;
+            this.ctx.strokeStyle = color;
+            bzCurve(this.ctx, points);
+
+        });
     }
 
     _addDragger(leftIdx, rightIdx) {
@@ -74,7 +107,7 @@ class StorylineSection extends Component {
         super({ class: 'section', parent: parent.midEl }, parent);
         this.name = name;
         this.value = { index: -1 }; // the scrapbook index for the 'setting' of this section
-        this.targets = []; // the main & minor characters
+        this.targets = {}; // the main & minor characters
         this.settings = []; // the main & minor characters
         this.writingInstruction = null; // the instruction for the llm
         this.draw();
@@ -177,6 +210,7 @@ class Target extends Component {
     }
 
     position(p) {
+        this.p = p;
         this.$c13.style.position = 'absolute';
         this.$c13.style.left = p.x + 'px';
         this.$c13.style.top = p.y + 'px';

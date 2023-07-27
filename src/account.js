@@ -14,7 +14,6 @@ export class Account extends Component {
         this.draw();
     }
 
-
     draw() {
         var self = this;
 
@@ -26,9 +25,8 @@ export class Account extends Component {
         self.signinEl = $$mi({ parent: self.userEl, text: 'login' });
         self.signoutEl.addEventListener('click', self.doSignOut.bind(self));
         self.signinEl.addEventListener('click', self.doSignIn.bind(self));
-
+        $('not-logged-in-sign-in').addEventListener('click', self.doSignIn.bind(self));
         onAuthStateChanged(getAuth(), (user) => {
-            console.log(user)
             self.value = user;
             self.redraw();
             if (user != null) {

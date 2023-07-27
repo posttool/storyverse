@@ -40,12 +40,18 @@
     padding: 4px;
 }
 
+html {
+    height: 100%;
+}
 body {
     background: linear-gradient(180deg, #030303 0%, #232937 100%);
     margin: 20px;
+    height: 100%;
 }
 
-
+#root {
+    height: 100%;
+}
 
 #logo {
     display: flex;
@@ -77,6 +83,13 @@ body {
 .user-pic img {
     width: 32px;
     border-radius: 16px;
+}
+
+#not-logged-in {
+    margin: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;  
 }
 
 #main-tabs {
@@ -370,25 +383,31 @@ button.green {
     visibility: hidden;
 }
 
-.timeline-top {
+.storyline {
+    position: relative;
+    height: 600px;
+}
+
+.editor-tools {
     display: flex;
     flex-direction: row;
     padding: 10px;
+    position: absolute;
 }
 
-.timeline-climax {
-    border-top: 1px solid var(--light-color);
-    width: 86%;
-    height: 1px;
-    margin: 20px 0 0 60px;
+.editor-canvas {
+    position: absolute;
 }
 
-.timeline-mid {
+.editor-mid {
     display: flex;
     flex-direction: row;
     padding: 30px 10px 220px 10px;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
-
+/* 
 .timeline-labels {
     position: relative;
     width: 50px;
@@ -411,7 +430,7 @@ button.green {
     width: 600px;
     height: 1px;
     margin: 103px 0 0 35px;
-}
+} */
 
 
 .section {
