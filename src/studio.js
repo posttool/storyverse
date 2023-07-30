@@ -56,6 +56,7 @@ export class Studio extends Component {
                 this.picker.toolbar(false);
                 this.picker.draggable(true);
                 this.editor.visible(true);
+                this.editor.redraw();
                 $('picker').style.width = '100px';
                 break;
             case PLAYER:

@@ -22,11 +22,13 @@ export class Storyline extends Component {
         this.midEl = $$({ class: 'editor-mid', parent: this.el });
         // var $labels = $$({ class: 'editor-labels', parent: this.midEl })
         // $$({ class: 'center-line', parent: $labels })
-        this.addSection(new StorylineSection(this, 'Beginning'));
-        this.addSection(new StorylineSection(this, 'Middle'));
-        this.addSection(new StorylineSection(this, 'End'));
+        this.addSection(new StorylineSection(this));
+        this.addSection(new StorylineSection(this));
+        this.addSection(new StorylineSection(this));
         this._addDragger(0, 1);
         this._addDragger(1, 2);
+
+        this.propsEl = $$({ class: 'editor-props', parent: this.el});
     }
 
     addSection(section) {
@@ -57,47 +59,68 @@ export class Storyline extends Component {
         uniqueTargets.forEach(id => {
             var points = [];
             var color;
+            var xOffset = 20;
             this.sections.forEach((section, i) => {
                 var t = section.targets[id];
                 if (t) {
-                    var p = {x: t.p.x +  (i * 221) + 20, y: t.p.y + 50 };
+                    var w = section.getWidth();
+                    var p = { x: t.p.x + xOffset, y: t.p.y + 50 };
                     points.push(p);
-                    color = t.value.data.color;
+                    color = t.getData().color;
                 }
+                xOffset += section.getWidth() + 20;
             });
-            this.ctx.setLineDash([3,3]);
+            this.ctx.setLineDash([3, 3]);
             this.ctx.lineWidth = 2;
             this.ctx.strokeStyle = color;
             bzCurve(this.ctx, points);
-
         });
     }
 
     _addDragger(leftIdx, rightIdx) {
-        var leftEl = this.sections[leftIdx].el;
-        var rightEl = this.sections[rightIdx].el;
+        var left = this.sections[leftIdx];
+        var right = this.sections[rightIdx];
         var clickX = 0, leftW = 0, rightW = 0;
         var $s = $$({ class: 'dragger' });
-        leftEl.after($s);
+        left.el.after($s);
         function _dragging(e) {
             var d = (e.screenX - clickX);
             if (leftW + d < 70 || leftW + d > 270) {
                 return;
             }
-            leftEl.style.width = (leftW + d) + 'px'
+            left.setWidth((leftW + d))
             // rightEl.style.width = (rightW - d) + 'px'
         }
         $s.addEventListener('mousedown', (e) => {
-            leftW = leftEl.offsetWidth;
-            rightW = rightEl.offsetWidth;
+            leftW = left.getWidth();
+            rightW = right.getWidth();
             clickX = e.screenX;
             window.document.addEventListener('mousemove', _dragging)
         });
         window.document.addEventListener('mouseup', (e) => {
             window.document.removeEventListener('mousemove', _dragging);
+            this.redraw();
         });
     }
 
+    setUpTarget(t) {
+        t.setDataProvider(this.parent.picker.objects);
+        t.addListener('click', t => {
+            this.select(t);
+        });
+    }
+
+    select(t) {
+        t.select(true);
+        if (this.lastSelect && t != this.lastSelect) {
+            this.lastSelect.select(false);
+        }
+        this.lastSelect = t;
+
+        this.propsEl.innerText = '';
+        this.props = new TargetProps(this.propsEl, this, t);
+
+    }
 
 
 }
@@ -124,7 +147,9 @@ class StorylineSection extends Component {
         // DnD setup
         charactersEl.addEventListener('drop', (e) => {
             e.preventDefault();
-            this.dropCharacter(charactersEl, e.dataTransfer.getData('id'), { x: e.offsetX - 15, y: e.offsetY - 15 });
+            var r = this.el.getBoundingClientRect();
+            var p = { x: e.pageX - r.left - 15, y: e.pageY - r.top - 30 };
+            this.dropCharacter(charactersEl, e.dataTransfer.getData('id'), p);
             this.emit('change', this);
         });
         charactersEl.addEventListener('dragover', (e) => {
@@ -151,80 +176,134 @@ class StorylineSection extends Component {
     dropCharacter(el, id, p) {
         var t = this.targets[id];
         if (t == null) {
-            t = new Target(el, this.parent.parent.picker.objects.getValueById(id));
+            t = new Target(el, id);
             this.targets[id] = t;
+            this.parent.setUpTarget(t);
         }
+        this.parent.select(t);
         t.position(p);
     }
 
     dropSetting(el, id) {
-        var t = new Target(el, this.parent.parent.picker.objects.getValueById(id));
+        var t = new Target(el, id);
         this.settings.push(t);
+        this.parent.setUpTarget(t);
     }
 
+    getWidth() {
+        return this.el.offsetWidth;
+    }
 
+    setWidth(w) {
+        this.el.style.width = w + 'px';
+    }
 
 }
 
 
 
 class Target extends Component {
-    constructor(el, data) {
+    constructor(el, id) {
         super({ parent: el });
-        this.value = { data: data, size: 1 };
+        this.value = { id: id, size: 1 };
         this.draw();
-        this.redraw();
     }
 
     draw() {
-        this.$c13 = $$({ class: 'icon', parent: this.el });
+        this.dotEl = $$({ class: 'icon', parent: this.el });
+        // click
+        this.dotEl.addEventListener('click', e => {
+            this.emit('click', this);
+        })
         // DnD handling
-        // the largest dot can be dropped on
-        this.$c13.addEventListener('drop', (e) => {
-            e.preventDefault();
-            // this.value = {
-            //     index: Number(e.dataTransfer.getData('idx')),
-            //     size: -1
-            // };
-            // var origin_target = this.parent.parent.getTarget(e.dataTransfer.getData('originTargetId'));
-            // if (origin_target) {
-            //     origin_target.value.index = -1;
-            //     origin_target.emit('change', origin_target);
-            // }
-            // this.redraw();
-            // this.emit('change', this);
-        });
-        this.$c13.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            return false;
-        });
+        // this.dotEl.addEventListener('drop', (e) => {
+        //     e.preventDefault();
+        //     // todo when dropped on, replace character
+        // });
+        // this.dotEl.addEventListener('dragover', (e) => {
+        //     e.preventDefault();
+        //     return false;
+        // });
         // the dot is draggable
-        this.$c13.draggable = "true";
-        this.$c13.addEventListener('dragstart', (e) => {
-            this.$c13.style.opacity = '0.4';
-            e.dataTransfer.setData('id', this.value.data.id);
+        this.dotEl.draggable = "true";
+        this.dotEl.addEventListener('dragstart', (e) => {
+            this.dotEl.style.opacity = '0.4';
+            e.dataTransfer.setData('id', this.value.id);
         });
-        this.$c13.addEventListener('dragend', (e) => {
+        this.dotEl.addEventListener('dragend', (e) => {
             this.redraw(); // TODO handle situ where item wasnt dropped on a valid target
         });
     }
 
     position(p) {
         this.p = p;
-        this.$c13.style.position = 'absolute';
-        this.$c13.style.left = p.x + 'px';
-        this.$c13.style.top = p.y + 'px';
+        this.dotEl.style.position = 'absolute';
+        this.dotEl.style.left = p.x + 'px';
+        this.dotEl.style.top = p.y + 'px';
+    }
+
+    select(b) {
+        this.selected = b;
+        if (b) {
+            this.dotEl.classList.add('selected');
+        } else {
+            this.dotEl.classList.remove('selected');
+        }
     }
 
     redraw() {
-        if (this.value.index == -1) {
-            this.$c13.style.opacity = 0;
-        } else {
-            this.$c13.style.backgroundColor = this.value.data.color;
-            this.$c13.style.opacity = 1;
-        }
+        this.dotEl.style.backgroundColor = this.getData().color;
+        this.dotEl.style.opacity = 1;
+    }
+
+    setDataProvider(dp) {
+        this.dataProvider = dp;
+        this.redraw();
+    }
+
+    getData() {
+        if (this.dataProvider)
+            return this.dataProvider.getValueById(this.value.id);
+        else   
+            return {color: '#333'};
     }
 
 }
 
 
+class TargetProps extends Component {
+    constructor(parentEl, parent, target) {
+        super({parent: parentEl, class: 'target-props'}, parent);
+        this.target = target;
+        this.draw();
+    }
+
+    draw() {
+        this.prop1 = new TargetProp(this, {title: 'Role Strength', values: ['Major', '', '', 'Minor']});
+        this.prop2 = new TargetProp(this, {title: 'Dynamism', values: ['Crazy', '', '', 'Nada']});
+        this.prop3 = new TargetProp(this, {title: 'Conflict', values: ['Auto', 'Internal', 'External']});
+    }
+}
+
+class TargetProp extends Component {
+    constructor(parent, props) {
+        super({parent: parent.el, class: 'target-prop'}, parent);
+        this.props = props;
+        this.draw();
+    }
+    draw() {
+        this.titleEl = $$({parent: this.el, class: 'title'});
+        var labelsEl = $$({parent: this.el, class: 'labels'});
+        for (var i=0; i<this.props.values.length; i++) {
+            $$({parent: labelsEl, text: this.props.values[i], class: 'label'});
+            $$({parent: labelsEl, class: 'line'});
+        }
+        var line1El = $$({parent: this.el, class: 'line1'});
+        var line2El = $$({parent: this.el, class: 'line2'});
+        var dotEl = $$({parent: this.el, class: 'dot'});
+    }
+    redraw() {
+        this.titleEl.innerText = this.props.title;
+    }
+
+}

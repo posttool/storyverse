@@ -181,6 +181,10 @@ body {
     margin: 0 16px 0 0;
 }
 
+.icon.selected {
+    border: 5px solid white;
+}
+
 .picker-cell .textc {
     width: 70%;
 }
