@@ -2,7 +2,7 @@ function gradient(a, b) {
     return (b.y - a.y) / (b.x - a.x);
 }
 
-export function bzCurve(ctx, points, f, t) {
+export function bezierCurve(ctx, points, f, t) {
     if (typeof (f) == 'undefined') f = 0.3;
     if (typeof (t) == 'undefined') t = 0.6;
 
@@ -72,6 +72,9 @@ export function $$(o) {
     if (o.parent)
         o.parent.appendChild($t);
     return $t;
+}
+export function div(parentEl, className, text) {
+    return $$({parent: parentEl, class: className, text: text});
 }
 
 export function $$mi(o) {

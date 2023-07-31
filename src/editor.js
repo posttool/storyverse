@@ -1,4 +1,4 @@
-import { $, $$, bzCurve, Component } from './utils.js';
+import { $, $$, div, bezierCurve, Component } from './utils.js';
 
 
 export class Storyline extends Component {
@@ -12,23 +12,23 @@ export class Storyline extends Component {
     }
 
     draw() {
-        var $top = $$({ class: 'editor-toolbar', parent: this.el });
+        var $top = div(this.el, 'editor-toolbar');
         // todo add selects to top bar
-        this.canvasEl = $$({ class: 'editor-canvas', parent: this.el, el: 'canvas' });
+        this.canvasEl = $$({ parent: this.el, class: 'editor-canvas', el: 'canvas' });
         this.canvasEl.width = "900";
         this.canvasEl.height = "600";
         this.ctx = this.canvasEl.getContext('2d');
 
-        this.midEl = $$({ class: 'editor-mid', parent: this.el });
-        // var $labels = $$({ class: 'editor-labels', parent: this.midEl })
-        // $$({ class: 'center-line', parent: $labels })
+        this.midEl = div(this.el, 'editor-mid');
+        // var labelsEl = div(this.midEl, 'editor-labels')
+        // div(labelsEl, 'center-line')
         this.addSection(new StorylineSection(this));
         this.addSection(new StorylineSection(this));
         this.addSection(new StorylineSection(this));
         this._addDragger(0, 1);
         this._addDragger(1, 2);
 
-        this.propsEl = $$({ class: 'editor-props', parent: this.el });
+        this.propsEl = div(this.el, 'editor-props');
     }
 
     addSection(section) {
@@ -73,7 +73,7 @@ export class Storyline extends Component {
             this.ctx.setLineDash([3, 3]);
             this.ctx.lineWidth = 2;
             this.ctx.strokeStyle = color;
-            bzCurve(this.ctx, points);
+            bezierCurve(this.ctx, points);
         });
     }
 
@@ -110,12 +110,12 @@ export class Storyline extends Component {
     }
 
     select(t) {
-        t.select(true);
-        if (this.lastSelect && t != this.lastSelect) {
+        if (this.lastSelect) {
             this.lastSelect.select(false);
-            if (this.props) {
-                this.lastSelect.value.props = this.props.getValues();
-            }
+        }
+        t.select(true);
+        if (this.props) {
+            this.lastSelect.value.props = this.props.getValues();
         }
         this.lastSelect = t;
 
@@ -123,7 +123,6 @@ export class Storyline extends Component {
         this.props = new TargetProps(this.propsEl);
         this.props.parent = this;
         this.props.setTarget(t);
-
     }
 
 
@@ -135,18 +134,18 @@ class StorylineSection extends Component {
         this.name = name;
         this.value = { index: -1 }; // the scrapbook index for the 'setting' of this section
         this.targets = {}; // the main & minor characters
-        this.settings = []; // the main & minor characters
+        this.settings = {}; // the setting(s)
         this.writingInstruction = null; // the instruction for the llm
         this.draw();
     }
 
     draw() {
-        var charactersEl = $$({ parent: this.el, class: 'characters' });
-        var settingsEl = $$({ parent: this.el, class: 'settings' });
-        var text1El = $$({ parent: this.el, class: 'text1' });
-        this.labelEl = $$({ class: 'label', parent: text1El, text: '' });
-        var text2El = $$({ parent: this.el, class: 'text2' });
-        this.descriptionEl = $$({ class: 'description', parent: text2El, text: '' });
+        var charactersEl = div(this.el, 'characters');
+        var settingsEl = div(this.el, 'settings');
+        var text1El = div(this.el, 'text1');
+        this.labelEl = div(text1El, 'label', '');
+        // var text2El = div(this.el, 'text2');
+        // this.descriptionEl = div(text2El, 'description', '');
 
         // DnD setup
         charactersEl.addEventListener('drop', (e) => {
@@ -173,7 +172,7 @@ class StorylineSection extends Component {
 
     redraw() {
         this.writingInstruction = 'hi';
-        this.descriptionEl.innerHTML = '';
+        // this.descriptionEl.innerHTML = '';
         // this.descriptionEl.appendChild($ft);
     }
 
@@ -181,6 +180,7 @@ class StorylineSection extends Component {
         var t = this.targets[id];
         if (t == null) {
             t = new Target(el, id);
+            t.parent = this;
             this.targets[id] = t;
             this.parent.setUpTarget(t);
         }
@@ -189,9 +189,14 @@ class StorylineSection extends Component {
     }
 
     dropSetting(el, id) {
-        var t = new Target(el, id);
-        this.settings.push(t);
-        this.parent.setUpTarget(t);
+        var t = this.settings[id];
+        if (t == null) {
+            t = new Target(el, id);
+            t.parent = this;
+            this.settings[id] = t;
+            this.parent.setUpTarget(t);
+        }
+        this.parent.select(t);
     }
 
     getWidth() {
@@ -200,6 +205,15 @@ class StorylineSection extends Component {
 
     setWidth(w) {
         this.el.style.width = w + 'px';
+    }
+
+    select(b) {
+        this.selected = b;
+        if (b) {
+            this.el.classList.add('selected');
+        } else {
+            this.el.classList.remove('selected');
+        }
     }
 
 }
@@ -214,7 +228,7 @@ class Target extends Component {
     }
 
     draw() {
-        this.dotEl = $$({ class: 'icon', parent: this.el });
+        this.dotEl = div(this.el, 'icon');
         // click
         this.dotEl.addEventListener('click', e => {
             this.emit('click', this);
@@ -253,6 +267,7 @@ class Target extends Component {
         } else {
             this.dotEl.classList.remove('selected');
         }
+        this.parent.select(b);
     }
 
     redraw() {
@@ -284,12 +299,12 @@ class TargetProps extends Component {
     }
 
     draw() {
-        var charEl = $$({parent: this.el, class: 'character'});
-        this.icon = $$({parent: charEl, class: 'icon'});
-        this.title = $$({parent: charEl, class: 'name', text: ''});
+        var charEl = div(this.el, 'character');
+        this.icon = div(charEl, 'icon');
+        this.title = div(charEl, 'name', '');
         this.addProp('Role Strength', ['Major', '', '', 'Minor']);
         this.addProp('Dynamism', ['Crazy', '', '', 'Nada']);
-        this.addProp('Conflict', ['Auto', 'Internal', 'External']);
+        this.addProp('Conflict', ['Auto', 'Internal', 'External'], true);
     }
 
     redraw() {
@@ -297,8 +312,8 @@ class TargetProps extends Component {
         this.title.innerText = this.target.getData().name;
     }
 
-    addProp(name, values) {
-        var tp = new TargetProp(this, { title: name, values: values });
+    addProp(name, values, snap = false) {
+        var tp = new TargetProp(this, { title: name, values: values, snap: snap });
         this.props[name] = tp;
     }
 
@@ -312,9 +327,12 @@ class TargetProps extends Component {
 
     setTarget(t) {
         this.target = t;
-        for (var p in t.value.props) {
-            if (this.props[p])  
+        for (var p in this.props) {
+            if (t.value.props[p]) {
                 this.props[p].setValue(t.value.props[p]);
+            } else {
+                this.props[p].setValue(0);
+            }
         }
         this.redraw();
     }
@@ -330,49 +348,67 @@ class TargetProp extends Component {
     }
 
     draw() {
-        this.titleEl = $$({ parent: this.el, class: 'prop-title' });
-        var labelsEl = $$({ parent: this.el, class: 'labels' });
+        if (this.titleEl) {
+            console.log("??");
+            return;
+        }
+        this.titleEl = div(this.el, 'prop-title');
+        var labelsEl = div(this.el, 'labels');
         for (var i = 0; i < this.props.values.length; i++) {
-            var rowEl = $$({ parent: labelsEl, class: 'row' });
-            $$({ parent: rowEl, text: this.props.values[i], class: 'label' });
-            $$({ parent: rowEl, class: 'line' });
+            var rowEl = div(labelsEl, 'row');
+            div(rowEl, 'label', this.props.values[i]);
+            div(rowEl, 'line');
         }
-        this.line1El = $$({ parent: labelsEl, class: 'line1' });
-        this.line2El = $$({ parent: labelsEl, class: 'line2' });
-        this.dotEl = $$({ parent: labelsEl, class: 'dot' });
+        this.line1El = div(labelsEl, 'line1');
+        this.line2El = div(labelsEl, 'line2');
+        this.dotEl = div(labelsEl, 'dot');
+        // click
+        labelsEl.addEventListener('click', e => {
+            var r = this.line1El.getBoundingClientRect();
+            var y = (((this.props.values.length  - 1) * rowH) - (e.pageY - r.top)) / rowH ;
+            this.setValue(y);
+        });
         // dragging
-        var clickY = 0, clickV = 0, self = this;
-        function _dragging(e) {
-            var d = (clickY - e.screenY) / rowH;
-            self.setValue(clickV + d);
-        }
-        this.dotEl.addEventListener('mousedown', (e) => {
-            clickY = e.screenY;
-            clickV = self.value;
-            window.document.addEventListener('mousemove', _dragging)
-        });
-        window.document.addEventListener('mouseup', (e) => {
-            window.document.removeEventListener('mousemove', _dragging);
-            this.redraw();
-        });
+        this.dotEl.addEventListener('mousedown', this._mousedown.bind(this));
+        window.document.addEventListener('mouseup', this._mouseup.bind(this));
+    }
+    _mousedown(e) {
+        this._clickY = e.screenY;
+        this._clickV = this.value;
+        this._clickF = this._dragging.bind(this);
+        window.document.addEventListener('mousemove', this._clickF)
+    }
+    _mouseup(e) {
+        window.document.removeEventListener('mousemove', this._clickF);
+        this.redraw();
+    }
+    _dragging(e) {
+        var d = (this._clickY - e.screenY) / rowH;
+        this.setValue(this._clickV + d); 
     }
     redraw() {
         this.titleEl.innerText = this.props.title;
-        var totalH = this.props.values.length * rowH;
+        var totalH = (this.props.values.length  - 1) * rowH;
         var valH = this.value * rowH;
+        var yOffset = 8;
+        this.line1El.style.top = (yOffset) + 'px';
         this.line1El.style.height = totalH + 'px';
+        this.line2El.style.top = (yOffset + totalH - valH) + 'px';
         this.line2El.style.height = valH + 'px';
-        this.line2El.style.top = (totalH - valH) + 'px';
-        this.dotEl.style.top = (totalH - valH) + 'px';
+        this.line2El.style.visibility = this.props.snap ? 'hidden' : 'visible';
+        this.dotEl.style.top = (totalH - valH + 4) + 'px';
     }
 
     setValue(v) {
         if (v < 0) {
             this.value = 0;
-        } else if (v > this.props.values.length) {
-            this.value = this.props.values.length;
+        } else if (v > this.props.values.length - 1) {
+            this.value = this.props.values.length - 1;
         } else {
             this.value = v;
+        }
+        if (this.props.snap) {
+            this.value = Math.floor(this.value);
         }
         this.redraw();
     }
