@@ -28,7 +28,7 @@ export class Storyline extends Component {
         this._addDragger(0, 1);
         this._addDragger(1, 2);
 
-        this.propsEl = $$({ class: 'editor-props', parent: this.el});
+        this.propsEl = $$({ class: 'editor-props', parent: this.el });
     }
 
     addSection(section) {
@@ -89,7 +89,6 @@ export class Storyline extends Component {
                 return;
             }
             left.setWidth((leftW + d))
-            // rightEl.style.width = (rightW - d) + 'px'
         }
         $s.addEventListener('mousedown', (e) => {
             leftW = left.getWidth();
@@ -114,11 +113,16 @@ export class Storyline extends Component {
         t.select(true);
         if (this.lastSelect && t != this.lastSelect) {
             this.lastSelect.select(false);
+            if (this.props) {
+                this.lastSelect.value.props = this.props.getValues();
+            }
         }
         this.lastSelect = t;
 
         this.propsEl.innerText = '';
-        this.props = new TargetProps(this.propsEl, this, t);
+        this.props = new TargetProps(this.propsEl);
+        this.props.parent = this;
+        this.props.setTarget(t);
 
     }
 
@@ -180,8 +184,8 @@ class StorylineSection extends Component {
             this.targets[id] = t;
             this.parent.setUpTarget(t);
         }
-        this.parent.select(t);
         t.position(p);
+        this.parent.select(t);
     }
 
     dropSetting(el, id) {
@@ -205,7 +209,7 @@ class StorylineSection extends Component {
 class Target extends Component {
     constructor(el, id) {
         super({ parent: el });
-        this.value = { id: id, size: 1 };
+        this.value = { id: id, size: 1, props: {} };
         this.draw();
     }
 
@@ -262,48 +266,115 @@ class Target extends Component {
     }
 
     getData() {
-        if (this.dataProvider)
+        if (this.dataProvider) {
             return this.dataProvider.getValueById(this.value.id);
-        else   
-            return {color: '#333'};
+        } else {
+            return { color: '#333' };
+        }
     }
 
 }
 
 
 class TargetProps extends Component {
-    constructor(parentEl, parent, target) {
-        super({parent: parentEl, class: 'target-props'}, parent);
-        this.target = target;
+    constructor(parentEl) {
+        super({ parent: parentEl, class: 'target-props' });
+        this.props = {};
         this.draw();
     }
 
     draw() {
-        this.prop1 = new TargetProp(this, {title: 'Role Strength', values: ['Major', '', '', 'Minor']});
-        this.prop2 = new TargetProp(this, {title: 'Dynamism', values: ['Crazy', '', '', 'Nada']});
-        this.prop3 = new TargetProp(this, {title: 'Conflict', values: ['Auto', 'Internal', 'External']});
+        var charEl = $$({parent: this.el, class: 'character'});
+        this.icon = $$({parent: charEl, class: 'icon'});
+        this.title = $$({parent: charEl, class: 'name', text: ''});
+        this.addProp('Role Strength', ['Major', '', '', 'Minor']);
+        this.addProp('Dynamism', ['Crazy', '', '', 'Nada']);
+        this.addProp('Conflict', ['Auto', 'Internal', 'External']);
     }
+
+    redraw() {
+        this.icon.style.backgroundColor = this.target.getData().color;
+        this.title.innerText = this.target.getData().name;
+    }
+
+    addProp(name, values) {
+        var tp = new TargetProp(this, { title: name, values: values });
+        this.props[name] = tp;
+    }
+
+    getValues() {
+        var o = {};
+        for (var p in this.props) {
+            o[p] = this.props[p].value;
+        }
+        return o;
+    }
+
+    setTarget(t) {
+        this.target = t;
+        for (var p in t.value.props) {
+            if (this.props[p])  
+                this.props[p].setValue(t.value.props[p]);
+        }
+        this.redraw();
+    }
+
 }
 
+const rowH = 22;
 class TargetProp extends Component {
     constructor(parent, props) {
-        super({parent: parent.el, class: 'target-prop'}, parent);
+        super({ parent: parent.el, class: 'target-prop' }, parent);
         this.props = props;
         this.draw();
     }
+
     draw() {
-        this.titleEl = $$({parent: this.el, class: 'title'});
-        var labelsEl = $$({parent: this.el, class: 'labels'});
-        for (var i=0; i<this.props.values.length; i++) {
-            $$({parent: labelsEl, text: this.props.values[i], class: 'label'});
-            $$({parent: labelsEl, class: 'line'});
+        this.titleEl = $$({ parent: this.el, class: 'prop-title' });
+        var labelsEl = $$({ parent: this.el, class: 'labels' });
+        for (var i = 0; i < this.props.values.length; i++) {
+            var rowEl = $$({ parent: labelsEl, class: 'row' });
+            $$({ parent: rowEl, text: this.props.values[i], class: 'label' });
+            $$({ parent: rowEl, class: 'line' });
         }
-        var line1El = $$({parent: this.el, class: 'line1'});
-        var line2El = $$({parent: this.el, class: 'line2'});
-        var dotEl = $$({parent: this.el, class: 'dot'});
+        this.line1El = $$({ parent: labelsEl, class: 'line1' });
+        this.line2El = $$({ parent: labelsEl, class: 'line2' });
+        this.dotEl = $$({ parent: labelsEl, class: 'dot' });
+        // dragging
+        var clickY = 0, clickV = 0, self = this;
+        function _dragging(e) {
+            var d = (clickY - e.screenY) / rowH;
+            self.setValue(clickV + d);
+        }
+        this.dotEl.addEventListener('mousedown', (e) => {
+            clickY = e.screenY;
+            clickV = self.value;
+            window.document.addEventListener('mousemove', _dragging)
+        });
+        window.document.addEventListener('mouseup', (e) => {
+            window.document.removeEventListener('mousemove', _dragging);
+            this.redraw();
+        });
     }
     redraw() {
         this.titleEl.innerText = this.props.title;
+        var totalH = this.props.values.length * rowH;
+        var valH = this.value * rowH;
+        this.line1El.style.height = totalH + 'px';
+        this.line2El.style.height = valH + 'px';
+        this.line2El.style.top = (totalH - valH) + 'px';
+        this.dotEl.style.top = (totalH - valH) + 'px';
+    }
+
+    setValue(v) {
+        if (v < 0) {
+            this.value = 0;
+        } else if (v > this.props.values.length) {
+            this.value = this.props.values.length;
+        } else {
+            this.value = v;
+        }
+        this.redraw();
     }
 
 }

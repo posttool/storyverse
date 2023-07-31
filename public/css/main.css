@@ -291,6 +291,78 @@ textarea {
     border: 3px solid white;
 }
 
+.editor-props {
+    position: absolute;
+    top: 560px;
+    background-color: rgba(32, 33, 37, 0.60);
+    filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25));
+    padding: 10px;
+    width: 800px;
+    height: 150px;
+}
+
+.target-props {
+    display: flex;
+    flex-direction: row;
+}
+
+.target-prop {
+    width: 115px;
+    border-radius: 10px;
+    margin: 0 15px 0 0;
+    border-top: 3px solid #999;
+    background: #202125;
+    padding: 10px;
+    position: relative;
+}
+
+.target-prop .prop-title {
+   margin: 0 0 10px 0;
+}
+
+.target-prop .labels {
+    position: relative;
+}
+.target-prop .row {
+    height: 22px;
+}
+
+.target-prop .row .label {
+    font-size: 10px;
+    width: 50px;
+}
+
+.target-prop .row .line {
+    width: 33px;
+    margin-top: 8px;
+    border-top: 1px solid #555;
+}
+
+.target-prop .line1 {
+    border-left: 2px solid black;
+    position: absolute;
+    top: 5px;
+    left: 65px;
+    height: 50px;
+}
+
+.target-prop .line2 {
+    border-left: 2px solid white;
+    position: absolute;
+    top: 5px;
+    left: 66px;
+    height: 50px;
+}
+
+.target-prop .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 10px;
+    background-color: white;
+    position: absolute;
+    top: 5px;
+    left: 62px;
+}
 
 
 .window {
