@@ -1,4 +1,4 @@
-import { $, $$, div, bezierCurve, Component } from './utils.js';
+import { $, $$, $$mi, div, bezierCurve, Component } from './utils.js';
 
 
 export class Storyline extends Component {
@@ -25,8 +25,6 @@ export class Storyline extends Component {
         this.addSection(new StorylineSection(this));
         this.addSection(new StorylineSection(this));
         this.addSection(new StorylineSection(this));
-        this._addDragger(0, 1);
-        this._addDragger(1, 2);
 
         this.propsEl = div(this.el, 'editor-props');
     }
@@ -35,7 +33,8 @@ export class Storyline extends Component {
         this.sections.push(section);
         section.addListener('change', (e) => {
             this.redraw(section);
-        })
+        });
+        this._addDragger(this.sections.length - 1);
     }
 
     redraw(section) {
@@ -77,22 +76,20 @@ export class Storyline extends Component {
         });
     }
 
-    _addDragger(leftIdx, rightIdx) {
+    _addDragger(leftIdx) {
         var left = this.sections[leftIdx];
-        var right = this.sections[rightIdx];
-        var clickX = 0, leftW = 0, rightW = 0;
+        var clickX = 0, leftW = 0;
         var $s = $$({ class: 'dragger' });
         left.el.after($s);
         function _dragging(e) {
             var d = (e.screenX - clickX);
-            if (leftW + d < 70 || leftW + d > 270) {
+            if (leftW + d < 70 || leftW + d > 470) {
                 return;
             }
             left.setWidth((leftW + d))
         }
         $s.addEventListener('mousedown', (e) => {
             leftW = left.getWidth();
-            rightW = right.getWidth();
             clickX = e.screenX;
             window.document.addEventListener('mousemove', _dragging)
         });
@@ -109,20 +106,27 @@ export class Storyline extends Component {
         });
     }
 
-    select(t) {
+    select(target) {
         if (this.lastSelect) {
             this.lastSelect.select(false);
         }
-        t.select(true);
+        target.select(true);
         if (this.props) {
             this.lastSelect.value.props = this.props.getValues();
         }
-        this.lastSelect = t;
+        this.lastSelect = target;
 
         this.propsEl.innerText = '';
         this.props = new TargetProps(this.propsEl);
         this.props.parent = this;
-        this.props.setTarget(t);
+        this.props.setTarget(target);
+        this.props.addListener('delete', target => {
+            var section = target.parent;
+            delete section.targets[target.value.id]
+            target.el.innerHTML = '';
+            this.propsEl.innerText = '';
+            this.redraw();
+        });
     }
 
 
@@ -171,9 +175,53 @@ class StorylineSection extends Component {
     }
 
     redraw() {
-        this.writingInstruction = 'hi';
-        // this.descriptionEl.innerHTML = '';
-        // this.descriptionEl.appendChild($ft);
+        //        var txt = 'Write the ' + this.name + ' of a story in 2 sentences using this storytelling framework: ' + this.parent.framework + '. ';
+
+        var frameNumber = this.parent.sections.indexOf(this) + 1;
+        var totalFrames = this.parent.sections.length;
+        var characters = this.getCharacters();
+        var settings = this.getSettings();
+        var instruction = ''
+        instruction += 'Write scene ' + frameNumber + ' of ' + totalFrames + ' of a story. ';
+        if (characters.length != 0) {
+            instruction += 'These are the characters in this scene and their properties:\n';
+            for (var p in this.targets) {
+                var cdata = this.targets[p].getData();
+                var cprops = this.targets[p].value.props;
+                instruction += cdata.name + ' ';
+                for (var q in cprops) {
+                    instruction += '(' + q+': '+cprops[q].toFixed(1)+') ';
+                }
+                instruction += '\n'
+            }    
+        } else {
+            instruction += 'There are no characters in this scene. '
+        }
+        if (settings.length != 0) {
+            instruction += 'This scene has the following settings: ';
+            instruction += settings.map(c => c.name).join(', ') + '. ';
+        } else {
+            instruction += 'There is no specified setting. '
+        }
+
+        this.writingInstruction = instruction;
+        this.labelEl.innerText = this.writingInstruction;
+    }
+
+    getCharacters() {
+        var c = [];
+        for (var p in this.targets) {
+            c.push(this.targets[p].getData());
+        }
+        return c;
+    }
+
+    getSettings() {
+        var c = [];
+        for (var p in this.settings) {
+            c.push(this.settings[p].getData());
+        }
+        return c;
     }
 
     dropCharacter(el, id, p) {
@@ -288,6 +336,8 @@ class Target extends Component {
         }
     }
 
+
+
 }
 
 
@@ -302,9 +352,14 @@ class TargetProps extends Component {
         var charEl = div(this.el, 'character');
         this.icon = div(charEl, 'icon');
         this.title = div(charEl, 'name', '');
+        this.delEl = $$mi({ parent: charEl, class: 'button-delete', text: 'delete' });
         this.addProp('Role Strength', ['Major', '', '', 'Minor']);
         this.addProp('Dynamism', ['Crazy', '', '', 'Nada']);
         this.addProp('Conflict', ['Auto', 'Internal', 'External'], true);
+        //
+        this.delEl.addEventListener('click', e => {
+            this.emit('delete', this.target);
+        });
     }
 
     redraw() {
@@ -340,6 +395,7 @@ class TargetProps extends Component {
 }
 
 const rowH = 22;
+const yOffset = 8;
 class TargetProp extends Component {
     constructor(parent, props) {
         super({ parent: parent.el, class: 'target-prop' }, parent);
@@ -365,7 +421,7 @@ class TargetProp extends Component {
         // click
         labelsEl.addEventListener('click', e => {
             var r = this.line1El.getBoundingClientRect();
-            var y = (((this.props.values.length  - 1) * rowH) - (e.pageY - r.top)) / rowH ;
+            var y = (this.props.values.length - 1) - (e.pageY - r.top - yOffset) / rowH;
             this.setValue(y);
         });
         // dragging
@@ -384,13 +440,12 @@ class TargetProp extends Component {
     }
     _dragging(e) {
         var d = (this._clickY - e.screenY) / rowH;
-        this.setValue(this._clickV + d); 
+        this.setValue(this._clickV + d);
     }
     redraw() {
         this.titleEl.innerText = this.props.title;
-        var totalH = (this.props.values.length  - 1) * rowH;
+        var totalH = (this.props.values.length - 1) * rowH;
         var valH = this.value * rowH;
-        var yOffset = 8;
         this.line1El.style.top = (yOffset) + 'px';
         this.line1El.style.height = totalH + 'px';
         this.line2El.style.top = (yOffset + totalH - valH) + 'px';

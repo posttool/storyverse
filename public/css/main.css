@@ -309,6 +309,12 @@ textarea {
     flex-direction: row;
 }
 
+.target-props .character {
+    width: 80px;
+}
+.target-props .character .name {
+    font-size: 16px;
+}
 .target-prop {
     width: 115px;
     border-radius: 10px;
@@ -544,6 +550,8 @@ button.green {
     width: 100%;
     height: 44px;
     margin: 0 0 20px 0;
+    display: flex;
+    flex-direction: row;
 }
 
 .section .text1 {
