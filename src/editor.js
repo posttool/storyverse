@@ -1,4 +1,5 @@
-import { $, $$, $$mi, div, bezierCurve, Component } from './utils.js';
+import { $, $$, $$mi, $$sel, div, bezierCurve, Component } from './utils.js';
+import { FRAMEWORKS, TONE, getPreamble, getInstructionForSection } from './prompts.js';
 
 
 export class Storyline extends Component {
@@ -13,6 +14,12 @@ export class Storyline extends Component {
 
     draw() {
         var $top = div(this.el, 'editor-toolbar');
+        this.frameworkSelect = $$sel({ parent: $top, options: FRAMEWORKS.map(c => c.name) });
+        // this.frameworkSelect.addEventListener('change', this.rewrite.bind(this))
+        this.toneSelect = $$sel({ parent: $top, options: TONE.map(c => c.name) });
+        // this.toneSelect.addEventListener('change', this.rewrite.bind(this))
+        this.refresh = $$mi({ parent: $top, text: 'refresh' });
+        this.refresh.addEventListener('click', this.rewrite.bind(this));
         // todo add selects to top bar
         this.canvasEl = $$({ parent: this.el, class: 'editor-canvas', el: 'canvas' });
         this.canvasEl.width = "900";
@@ -34,7 +41,7 @@ export class Storyline extends Component {
         section.addListener('change', (e) => {
             this.redraw(section);
         });
-        this._addDragger(this.sections.length - 1);
+        this.addDragger(this.sections.length - 1);
     }
 
     redraw(section) {
@@ -47,20 +54,13 @@ export class Storyline extends Component {
         }
         // curvey lines
         this.ctx.clearRect(0, 0, 1000, 1000);
-        var uniqueTargets = [];
-        this.sections.forEach(section => {
-            Object.keys(section.targets).forEach(k => {
-                if (uniqueTargets.indexOf(k) == -1) {
-                    uniqueTargets.push(k);
-                }
-            })
-        });
-        uniqueTargets.forEach(id => {
+        var uniqueTargets = this.uniqueTargets();
+        uniqueTargets.forEach(target => {
             var points = [];
             var color;
             var xOffset = 20;
             this.sections.forEach((section, i) => {
-                var t = section.targets[id];
+                var t = section.targets[target.value.id];
                 if (t) {
                     var w = section.getWidth();
                     var p = { x: t.p.x + xOffset, y: t.p.y + 50 };
@@ -76,7 +76,55 @@ export class Storyline extends Component {
         });
     }
 
-    _addDragger(leftIdx) {
+    uniqueTargets(group = 'targets') {
+        var uniqueTargetIds = {};
+        var uniqueTargets = [];
+        this.sections.forEach(section => {
+            Object.keys(section[group]).forEach(k => {
+                if (!(k in uniqueTargetIds)) {
+                    uniqueTargetIds[k] = true;
+                    uniqueTargets.push(section[group][k]);
+                }
+            })
+        });
+        return uniqueTargets;
+    }
+
+    rewrite() {
+        var framework = this.frameworkSelect.options[this.frameworkSelect.selectedIndex].text;
+        var tone = this.toneSelect.options[this.toneSelect.selectedIndex].text;
+        var characters = this.uniqueTargets().map(v => v.getData());
+        var settings = this.uniqueTargets('settings').map(v => v.getData());
+        var instructions = getPreamble(framework, tone, characters, settings);
+        this.writing = true;
+        this.sectionIndex = 0;
+        this.messages = [];
+        this.messages.push({ role: 'user', content: instructions });
+        this.rewriteNext();
+
+    }
+
+    rewriteNext() {
+        var instruction = this.sections[this.sectionIndex].writingInstruction;
+        console.log('>' + instruction)
+        this.messages.push({ role: 'user', content: instruction });
+        this.parent.services.GPT.Test({ messages: this.messages })
+            .then((result) => {
+                // var finish_reason = result.data.response.choices[0].finish_reason;
+                var message = result.data.response.choices[0].message;
+                console.log(message.content)
+                this.messages.push(message);
+                this.sections[this.sectionIndex].setWriting(message.content);
+                this.sectionIndex++;
+                if (this.sectionIndex < this.sections.length) {
+                    this.rewriteNext();
+                } else {
+                    this.writing = false;
+                }
+            });
+    }
+
+    addDragger(leftIdx) {
         var left = this.sections[leftIdx];
         var clickX = 0, leftW = 0;
         var $s = $$({ class: 'dragger' });
@@ -111,24 +159,28 @@ export class Storyline extends Component {
             this.lastSelect.select(false);
         }
         target.select(true);
-        if (this.props) {
-            this.lastSelect.value.props = this.props.getValues();
-        }
         this.lastSelect = target;
 
         this.propsEl.innerText = '';
-        this.props = new TargetProps(this.propsEl);
+        this.props = new TargetProps(this.propsEl, target);
         this.props.parent = this;
-        this.props.setTarget(target);
+        this.props.redraw();
         this.props.addListener('delete', target => {
             var section = target.parent;
-            delete section.targets[target.value.id]
+            if (target.value.type == 'character') {
+                delete section.targets[target.value.id]
+            } else {
+                delete section.settings[target.value.id]
+            }
             target.el.innerHTML = '';
             this.propsEl.innerText = '';
             this.redraw();
         });
+        this.props.addListener('change', e => {
+            this.props.target.value.props = this.props.getValues();
+            this.props.target.parent.redraw();
+        })
     }
-
 
 }
 
@@ -156,7 +208,7 @@ class StorylineSection extends Component {
             e.preventDefault();
             var r = this.el.getBoundingClientRect();
             var p = { x: e.pageX - r.left - 15, y: e.pageY - r.top - 30 };
-            this.dropCharacter(charactersEl, e.dataTransfer.getData('id'), p);
+            this.drop('character', e.dataTransfer.getData('id'), charactersEl, p);
             this.emit('change', this);
         });
         charactersEl.addEventListener('dragover', (e) => {
@@ -165,7 +217,7 @@ class StorylineSection extends Component {
         });
         settingsEl.addEventListener('drop', (e) => {
             e.preventDefault();
-            this.dropSetting(settingsEl, e.dataTransfer.getData('id'));
+            this.drop('setting', e.dataTransfer.getData('id'), settingsEl);
             this.emit('change', this);
         });
         settingsEl.addEventListener('dragover', (e) => {
@@ -175,37 +227,34 @@ class StorylineSection extends Component {
     }
 
     redraw() {
-        //        var txt = 'Write the ' + this.name + ' of a story in 2 sentences using this storytelling framework: ' + this.parent.framework + '. ';
-
-        var frameNumber = this.parent.sections.indexOf(this) + 1;
-        var totalFrames = this.parent.sections.length;
-        var characters = this.getCharacters();
-        var settings = this.getSettings();
-        var instruction = ''
-        instruction += 'Write scene ' + frameNumber + ' of ' + totalFrames + ' of a story. ';
-        if (characters.length != 0) {
-            instruction += 'These are the characters in this scene and their properties:\n';
-            for (var p in this.targets) {
-                var cdata = this.targets[p].getData();
-                var cprops = this.targets[p].value.props;
-                instruction += cdata.name + ' ';
-                for (var q in cprops) {
-                    instruction += '(' + q+': '+cprops[q].toFixed(1)+') ';
-                }
-                instruction += '\n'
-            }    
-        } else {
-            instruction += 'There are no characters in this scene. '
+        var characterData = [];
+        for (let p in this.targets) {
+            let cdata = Object.assign({}, this.targets[p].getData());
+            let cprops = Object.assign({}, this.targets[p].value.props);
+            cprops.Happiness = 1 - Math.max(0, this.targets[p].p.y / 180);
+            cdata.properties = cprops;
+            characterData.push(cdata);
         }
-        if (settings.length != 0) {
-            instruction += 'This scene has the following settings: ';
-            instruction += settings.map(c => c.name).join(', ') + '. ';
-        } else {
-            instruction += 'There is no specified setting. '
+        var settingData = [];
+        for (let p in this.settings) {
+            let sdata = Object.assign({}, this.settings[p].getData());
+            // let sprops = Object.assign({}, this.targets[p].value.props);
+            // sdata.props = sprops;
+            settingData.push(sdata);
         }
+        this.writingInstruction = getInstructionForSection({
+            frame: this.parent.sections.indexOf(this) + 1,
+            frameTotal: this.parent.sections.length,
+            width: (this.getWidth() / 200),
+            characters: characterData,
+            settings: settingData
+        });
 
-        this.writingInstruction = instruction;
         this.labelEl.innerText = this.writingInstruction;
+    }
+
+    setWriting(w) {
+        this.labelEl.innerText = w;
     }
 
     getCharacters() {
@@ -224,25 +273,17 @@ class StorylineSection extends Component {
         return c;
     }
 
-    dropCharacter(el, id, p) {
-        var t = this.targets[id];
+    drop(type, id, el, p) {
+        var where = (type == 'character') ? this.targets : this.settings;
+        var t = where[id];
         if (t == null) {
-            t = new Target(el, id);
+            t = new Target(type, id, el);
             t.parent = this;
-            this.targets[id] = t;
+            where[id] = t;
             this.parent.setUpTarget(t);
         }
-        t.position(p);
-        this.parent.select(t);
-    }
-
-    dropSetting(el, id) {
-        var t = this.settings[id];
-        if (t == null) {
-            t = new Target(el, id);
-            t.parent = this;
-            this.settings[id] = t;
-            this.parent.setUpTarget(t);
+        if (p != null) {
+            t.position(p);
         }
         this.parent.select(t);
     }
@@ -269,9 +310,9 @@ class StorylineSection extends Component {
 
 
 class Target extends Component {
-    constructor(el, id) {
+    constructor(type, id, el) {
         super({ parent: el });
-        this.value = { id: id, size: 1, props: {} };
+        this.value = { type: type, id: id, size: 1, props: {} };
         this.draw();
     }
 
@@ -342,10 +383,12 @@ class Target extends Component {
 
 
 class TargetProps extends Component {
-    constructor(parentEl) {
+    constructor(parentEl, target) {
         super({ parent: parentEl, class: 'target-props' });
         this.props = {};
+        this.target = target;
         this.draw();
+        this.setValues(target.value.props);
     }
 
     draw() {
@@ -353,9 +396,12 @@ class TargetProps extends Component {
         this.icon = div(charEl, 'icon');
         this.title = div(charEl, 'name', '');
         this.delEl = $$mi({ parent: charEl, class: 'button-delete', text: 'delete' });
-        this.addProp('Role Strength', ['Major', '', '', 'Minor']);
-        this.addProp('Dynamism', ['Crazy', '', '', 'Nada']);
-        this.addProp('Conflict', ['Auto', 'Internal', 'External'], true);
+
+        if (this.target.value.type == 'character') {
+            this.addProp('Role Strength', ['Major', '', '', 'Minor']);
+            this.addProp('Dynamism', ['Crazy', '', '', 'Nada']);
+            this.addProp('Conflict', ['Auto', 'Internal', 'External'], true);
+        }
         //
         this.delEl.addEventListener('click', e => {
             this.emit('delete', this.target);
@@ -369,6 +415,9 @@ class TargetProps extends Component {
 
     addProp(name, values, snap = false) {
         var tp = new TargetProp(this, { title: name, values: values, snap: snap });
+        tp.addListener('change', e => {
+            this.emit('change');
+        })
         this.props[name] = tp;
     }
 
@@ -380,16 +429,14 @@ class TargetProps extends Component {
         return o;
     }
 
-    setTarget(t) {
-        this.target = t;
+    setValues(tprops) {
         for (var p in this.props) {
-            if (t.value.props[p]) {
-                this.props[p].setValue(t.value.props[p]);
+            if (tprops[p]) {
+                this.props[p].setValue(tprops[p]);
             } else {
                 this.props[p].setValue(0);
             }
         }
-        this.redraw();
     }
 
 }
@@ -437,6 +484,7 @@ class TargetProp extends Component {
     _mouseup(e) {
         window.document.removeEventListener('mousemove', this._clickF);
         this.redraw();
+        this.emit('change', this.value);
     }
     _dragging(e) {
         var d = (this._clickY - e.screenY) / rowH;

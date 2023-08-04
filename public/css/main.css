@@ -474,11 +474,11 @@ button.green {
     height: 600px;
 }
 
-.editor-tools {
+.editor-toolbar {
     display: flex;
     flex-direction: row;
-    padding: 10px;
     position: absolute;
+    z-index: 99;
 }
 
 .editor-canvas {
@@ -558,6 +558,8 @@ button.green {
     width: 100%;
     height: 150px;
     margin: 0 0 10px 0;
+    overflow-y:scroll;
+
 }
 
 .section .text2 {
@@ -567,7 +569,7 @@ button.green {
 }
 
 .section .label {
-    color: var(--light-color);
+    color: white;
 }
 
 .section .description {

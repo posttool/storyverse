@@ -1,5 +1,10 @@
-function gradient(a, b) {
-    return (b.y - a.y) / (b.x - a.x);
+export function getByName(array, name) {
+    for (var i = 0; i < array.length; i++) {
+        if (array[i].name == name) {
+            return array[i];
+        }
+    };
+    return null;
 }
 
 export function bezierCurve(ctx, points, f, t) {
@@ -22,7 +27,7 @@ export function bezierCurve(ctx, points, f, t) {
         var curP = points[i];
         var nexP = points[i + 1];
         if (nexP) {
-            m = gradient(preP, nexP);
+            m = (nexP.y - preP.y) / (nexP.x - preP.x);
             dx2 = (nexP.x - curP.x) * -f;
             dy2 = dx2 * m * t;
         } else {
