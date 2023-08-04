@@ -96,12 +96,13 @@ export class Storyline extends Component {
         var characters = this.uniqueTargets().map(v => v.getData());
         var settings = this.uniqueTargets('settings').map(v => v.getData());
         var instructions = getPreamble(framework, tone, characters, settings);
+        console.log('>' + instructions)
         this.writing = true;
         this.sectionIndex = 0;
         this.messages = [];
         this.messages.push({ role: 'user', content: instructions });
         this.rewriteNext();
-
+        this.visible(false, this.refresh);
     }
 
     rewriteNext() {
@@ -120,6 +121,7 @@ export class Storyline extends Component {
                     this.rewriteNext();
                 } else {
                     this.writing = false;
+                    this.visible(true, this.refresh);
                 }
             });
     }
@@ -136,15 +138,18 @@ export class Storyline extends Component {
             }
             left.setWidth((leftW + d))
         }
+        function _up(e) {
+            window.document.removeEventListener('mousemove', _dragging);
+            window.document.removeEventListener('mouseup', _up);
+            this.redraw();
+        }
         $s.addEventListener('mousedown', (e) => {
             leftW = left.getWidth();
             clickX = e.screenX;
-            window.document.addEventListener('mousemove', _dragging)
+            window.document.addEventListener('mousemove', _dragging);
+            window.document.addEventListener('mouseup', _up);
         });
-        window.document.addEventListener('mouseup', (e) => {
-            window.document.removeEventListener('mousemove', _dragging);
-            this.redraw();
-        });
+        
     }
 
     setUpTarget(t) {
@@ -451,10 +456,6 @@ class TargetProp extends Component {
     }
 
     draw() {
-        if (this.titleEl) {
-            console.log("??");
-            return;
-        }
         this.titleEl = div(this.el, 'prop-title');
         var labelsEl = div(this.el, 'labels');
         for (var i = 0; i < this.props.values.length; i++) {
@@ -473,16 +474,18 @@ class TargetProp extends Component {
         });
         // dragging
         this.dotEl.addEventListener('mousedown', this._mousedown.bind(this));
-        window.document.addEventListener('mouseup', this._mouseup.bind(this));
     }
     _mousedown(e) {
         this._clickY = e.screenY;
         this._clickV = this.value;
         this._clickF = this._dragging.bind(this);
+        this._upF =  this._mouseup.bind(this);
         window.document.addEventListener('mousemove', this._clickF)
+        window.document.addEventListener('mouseup',this._upF);
     }
     _mouseup(e) {
         window.document.removeEventListener('mousemove', this._clickF);
+        window.document.removeEventListener('mouseup', this._upF);
         this.redraw();
         this.emit('change', this.value);
     }
