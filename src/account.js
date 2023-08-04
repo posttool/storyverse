@@ -15,24 +15,23 @@ export class Account extends Component {
     }
 
     draw() {
-        var self = this;
 
-        self.el.innerHTML = '';
-        self.userEl = $$({ parent: self.el, class: 'user-container' });
-        self.picEl = $$({ parent: self.userEl, class: 'user-pic' });
-        self.nameEl = $$({ parent: self.userEl, class: 'user-name' });
-        self.signoutEl = $$mi({ parent: self.userEl, text: 'logout' });
-        self.signinEl = $$mi({ parent: self.userEl, text: 'login' });
-        self.signoutEl.addEventListener('click', self.doSignOut.bind(self));
-        self.signinEl.addEventListener('click', self.doSignIn.bind(self));
-        $('not-logged-in-sign-in').addEventListener('click', self.doSignIn.bind(self));
+        this.el.innerHTML = '';
+        this.userEl = $$({ parent: this.el, class: 'user-container' });
+        this.picEl = $$({ parent: this.userEl, class: 'user-pic' });
+        this.nameEl = $$({ parent: this.userEl, class: 'user-name' });
+        this.signoutEl = $$mi({ parent: this.userEl, text: 'logout' });
+        this.signinEl = $$mi({ parent: this.userEl, text: 'login' });
+        this.signoutEl.addEventListener('click', this.doSignOut.bind(this));
+        this.signinEl.addEventListener('click', this.doSignIn.bind(this));
+        $('not-logged-in-sign-in').addEventListener('click', this.doSignIn.bind(this));
         onAuthStateChanged(getAuth(), (user) => {
-            self.value = user;
-            self.redraw();
+            this.value = user;
+            this.redraw();
             if (user != null) {
-                self.emit('login', user);
+                this.emit('login', user);
             } else {
-                self.emit('logout');
+                this.emit('logout');
             }
         });
 
