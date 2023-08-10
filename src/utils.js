@@ -1,3 +1,14 @@
+export function random(a) {
+    return Math.floor(Math.random() * a);
+}
+
+export function oneOf(array) {
+    if (array && array.length != 0)
+        return array[random(array.length)];
+    else
+        return {};
+}
+
 export function getByName(array, name) {
     for (var i = 0; i < array.length; i++) {
         if (array[i].name == name) {
@@ -79,7 +90,7 @@ export function $$(o) {
     return $t;
 }
 export function div(parentEl, className, text) {
-    return $$({parent: parentEl, class: className, text: text});
+    return $$({ parent: parentEl, class: className, text: text });
 }
 
 export function $$mi(o) {

@@ -1,5 +1,6 @@
-import { $, $$, $$mi, $$sel, div, bezierCurve, Component } from './utils.js';
+import { oneOf, $, $$, $$mi, $$sel, div, bezierCurve, Component } from './utils.js';
 import { FRAMEWORKS, TONE, getPreamble, getInstructionForSection } from './prompts.js';
+import { GetVoiceList, TextToSpeech } from './tts.js';
 
 
 export class Storyline extends Component {
@@ -10,6 +11,10 @@ export class Storyline extends Component {
         this.framework = null;
         this.tone = null;
         this.draw();
+        GetVoiceList(o => {
+            console.log(">"+o)
+            this.voices = o.voices;
+        })
     }
 
     draw() {
@@ -100,6 +105,7 @@ export class Storyline extends Component {
         this.writing = true;
         this.sectionIndex = 0;
         this.messages = [];
+        this.storyText = '';
         this.messages.push({ role: 'user', content: instructions });
         this.rewriteNext();
         this.visible(false, this.refresh);
@@ -116,10 +122,12 @@ export class Storyline extends Component {
                 console.log(message.content)
                 this.messages.push(message);
                 this.sections[this.sectionIndex].setWriting(message.content);
+                this.storyText += message.content;
                 this.sectionIndex++;
                 if (this.sectionIndex < this.sections.length) {
                     this.rewriteNext();
                 } else {
+                    TextToSpeech(this.storyText, oneOf(this.voices).voice_id)
                     this.writing = false;
                     this.visible(true, this.refresh);
                 }
@@ -149,7 +157,7 @@ export class Storyline extends Component {
             window.document.addEventListener('mousemove', _dragging);
             window.document.addEventListener('mouseup', _up);
         });
-        
+
     }
 
     setUpTarget(t) {
@@ -479,9 +487,9 @@ class TargetProp extends Component {
         this._clickY = e.screenY;
         this._clickV = this.value;
         this._clickF = this._dragging.bind(this);
-        this._upF =  this._mouseup.bind(this);
+        this._upF = this._mouseup.bind(this);
         window.document.addEventListener('mousemove', this._clickF)
-        window.document.addEventListener('mouseup',this._upF);
+        window.document.addEventListener('mouseup', this._upF);
     }
     _mouseup(e) {
         window.document.removeEventListener('mousemove', this._clickF);

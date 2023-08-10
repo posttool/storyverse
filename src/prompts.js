@@ -32,7 +32,8 @@ export const TONE = [
     { name: "Serious", description: "The tone is solemn and earnest, dealing with weighty and significant themes without humor or frivolity." },
 ]
 
-export function getPreamble(frameworkName, toneName, characters, settings) {
+
+export function getPreamble_v1(frameworkName, toneName, characters, settings) {
     var framework = getByName(FRAMEWORKS, frameworkName);
     var tone = getByName(TONE, toneName);
 
@@ -61,10 +62,10 @@ export function getPreamble(frameworkName, toneName, characters, settings) {
     return instructions;
 }
 
-export function getInstructionForSection(section) {
+export function getInstructionForSection_v1(section) {
     var instruction = ''
     instruction += 'Write an outline of major events in scene ' + section.frame + ' of ' + section.frameTotal + '.\n';
-    instruction += 'Use less than ' + Math.floor(section.width * 8) + ' sentences.\n\n'; // why you ignore me so much
+    instruction += 'Use less than ' + Math.floor(section.width * 4) + ' events.\n\n'; // why you ignore me so much
     if (section.characters.length != 0) {
         instruction += 'Characters:\n';
         for (let i = 0; i < section.characters.length; i++) {
@@ -74,6 +75,106 @@ export function getInstructionForSection(section) {
                 instruction += '  (' + q + ': ' + character.properties[q].toFixed(1) + ')\n';
             }
             instruction += '\n'
+        }
+    } else {
+        instruction += 'There are no characters in this scene.\n'
+    }
+    if (section.settings.length != 0) {
+        instruction += 'Setting: ';
+        for (let i = 0; i < section.settings.length; i++) {
+            var setting = section.settings[i];
+            instruction += setting.name;
+            if (i != section.settings.length - 1) {
+                instruction += ', ';
+            }
+        }
+        instruction += '.\n';
+    } else {
+        instruction += 'There is no specified setting.\n'
+    }
+    return instruction;
+}
+
+/// v2
+
+const PREAMBLE = `Characters should reflect attributes. 
+Characters mood and behaviors should reflect these attributes. 
+Dont be too literal in your writing about the Character attributes.
+The attributes are (Fortune)
+Fortune ranges from 0 to 1 with 1 being the "Good Fortune" such as (wealth, health, good luck) and 0 being the "Ill Fortune" such as (sickeness, poverty, dead). 
+`;
+
+const BEGINNING = `Your job is to help orient our readers, make promises to them. Use the following structure to do so: 
+1. Introduce the characters by reflecting their point of view. How they interact with the world. Something that will give the reader an idea of the character attitude. 
+2. Introduce the setting by reflecting sensory details of it. Be unique. Details such as how does it feel, smell, sounds, vibrates, looks like, etc. 
+3. Let the reader know which genre we are using by using a unique detail of the genre to set the mood or tone for the story. 
+Only use between 1 and 3 sentences for this whole section.
+`;
+
+const MIDDLE = `Your job now is to open things up by knocking the character down and bring them up again. 
+You have up to 5 sentences. 
+Use phrases like: “Yes but” (implying the character made progress but something pushed back) or “No, and” (implying the character didn’t make progress and something got a bit worse).
+`;
+
+const CONFLICT = `Identify what type of conflict the character has. 
+Pick from the following list which conflict fits best for the character. 
+1 “Milieu”: the conflict is about a place, a destination. 
+2 “Inquiry”: the conflict is about a question that the character has. 
+3 “Internal:” The conflict happens from within the character. 
+4 “Events”: The conflict happens from something or someone external to the character.
+`;
+
+const END = `Your job is to close any remaining conflict, in the right order as they were opened. 
+You have up to 3 sentences. 
+You need to mirror the opening. 
+We need to know who, where, genre, and mood.
+Things have shifted in the course of the study and the reader needs to understand how. 
+1. How has the character changed? What are the new actions or reflections of the character? 
+2. Introduce the updated setting using sensory details. Do not be explicit in calling sensory details by that label, just describe with detail and precision how such details can help the reader understand the change of setting. 
+3. Introduce the change of mood and tone in the story by the evolution of the character. Give something specific.
+`;
+// alt end?
+// Your job is to close things down. 
+// Characters try something and succeed. 
+// Your job is to get the character closer to their goal. 
+// You have up to 5 sentences. 
+// Use phrases like: “Yes, and” (implying the movement towards the goal and the continuation towards the goal) or  “No,but” ( implying that there’s been a reversal that they didn’t think but they still got closer to the goal).
+
+
+const INSTRUCTIONS = [BEGINNING, MIDDLE + CONFLICT, END];
+
+
+export function getPreamble(frameworkName, toneName, characters, settings) {
+
+    var instructions = PREAMBLE;
+
+    instructions += 'This is the cast of characters:\n';
+    characters.forEach(character => {
+        instructions += character.name + ' ' + character.description + '\n';
+    });
+
+    instructions += 'This is the setting:\n';
+    settings.forEach(settings => {
+        instructions += settings.name + ' ' + settings.description + '\n';
+    });
+
+    // var framework = getByName(FRAMEWORKS, frameworkName);
+    // var tone = getByName(TONE, toneName);
+    // instructions += 'Use the following framework and tone to write the story.\n';
+    // instructions += framework.name + ': ' + framework.description + '\n';
+    // instructions += tone.name + ': ' + tone.description + '\n';
+
+    return instructions;
+}
+
+export function getInstructionForSection(section) {
+    var instruction = INSTRUCTIONS[section.frame -1];
+
+    if (section.characters.length != 0) {
+        instruction += 'Characters:\n';
+        for (let i = 0; i < section.characters.length; i++) {
+            var character = section.characters[i];
+            instruction += character.name + ' (Fortune ' + character.properties['Happiness'] + ')\n';
         }
     } else {
         instruction += 'There are no characters in this scene.\n'
