@@ -139,7 +139,7 @@ Get the characers into conflicts, and write about their struggle by picking from
 4 “Events”: The conflict happens from something or someone external to the character. Your goal as a writer is to stop the characters from restoring the status quo. Characters will have fight scenes or disruptions. 
 
 Write about how this new Fortune affects the characters ability to respond to conflicts. Keep reflecting in your writing the genre and tone you picked at the beginning. 
-You have up to 5 sentences. 
+You have up to 5 sentences. If you have more than 1 Character, create dialogs between them in the following format: [Character X: , Character Y: ]
 At the end of this section write "**FORTUNE** : explaining to the reader how the new Fortune attribute affects each of their characters"
 `;
 
