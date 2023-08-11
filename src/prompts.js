@@ -114,22 +114,20 @@ table below and reflect that feeling into the character state. The character act
 "0.8: Bliss, Splendor, Radiance, Pinnacle, Excellence, Peak, Zenith, Majesty, Brilliance, Glory""
 "0.9: Perfection, Nirvana, Paradise, Culmination, Apex, Summit, Transcendence, Utopia, Ideal, Zenith""
 
-If you are getting new Fortune attributes, make sure to reflect it. Your writing should be influeced heavily by the Fortune attribute for each character.  
+If you are getting new Fortune attributes, make sure to reflect it. Your writing should be influeced heavily by the Fortune attribute for each character.
 `;
 
 const BEGINNING = `Your job is to help orient our readers, make promises to them. Use the following structure to do so: 
 1. Introduce each characters by reflecting their point of view. How they interact with the world. Something that will give the reader an idea of the character attitude. 
 2. Introduce the setting by reflecting sensory details of it. Be unique. Details such as how does it feel, smell, sounds, vibrates, and looks like to the characters. 
-
 3. Write: **GENRE**: followed by the genre you are using by using a unique detail of the genre to set the mood or tone for the story.
 
 Explain to the reader how the Fortune attribute affects each of their characters by writing: FORTUNE, Character name, and a short summary.
 Only use between 1 and 3 short sentences for this whole section.
-At the top of your writing, give a summary using emojis. 
-
+At the top of your writing, give a summary using text and emojis. 
 `;
 
-const CONFLICT_INTRODUCTION = `Your job now is to open things up by knocking the characters down and bring them up again. 
+const CONFLICT_INTRODUCTION = `Your job  is to open things up by knocking the characters down and bring them up again. 
 Make sure you reflect the new Fortune attributes in your writing. . 
 Get the characers into conflicts, and write about their struggle by picking from the following list the conflicts that best fit the character.
 
@@ -141,13 +139,6 @@ Get the characers into conflicts, and write about their struggle by picking from
 Write about how this new Fortune affects the characters ability to respond to conflicts. Keep reflecting in your writing the genre and tone you picked at the beginning. 
 You have up to 5 sentences. If you have more than 1 Character, create dialogs between them in the following format: [Character X: , Character Y: ]
 At the end of this section write "**FORTUNE** : explaining to the reader how the new Fortune attribute affects each of their characters"
-
-Identify what type of conflict the character has. 
-Pick from the following list which conflict fits best for the character. 
-1 “Milieu”: the conflict is about a place, a destination. 
-2 “Inquiry”: the conflict is about a question that the character has. 
-3 “Internal:” The conflict happens from within the character. 
-4 “Events”: The conflict happens from something or someone external to the character.
 
 Summarize the type of conflict by saying: "**CONFLICT**: and pick the right emoji"
 `;
@@ -168,8 +159,7 @@ Write: "THE END"
 
 const INSTRUCTIONS = [BEGINNING, CONFLICT_INTRODUCTION, CONFLICT_RESOLUTION, END];
 
-
-export function getPreamble(frameworkName, toneName, characters, settings) {
+export function getPreamble(characters, settings) {
 
     var instructions = PREAMBLE;
 
@@ -183,11 +173,6 @@ export function getPreamble(frameworkName, toneName, characters, settings) {
         instructions += settings.name + ' ' + settings.description + '\n';
     });
 
-    // var framework = getByName(FRAMEWORKS, frameworkName);
-    // var tone = getByName(TONE, toneName);
-    // instructions += 'Use the following framework and tone to write the story.\n';
-    // instructions += framework.name + ': ' + framework.description + '\n';
-    // instructions += tone.name + ': ' + tone.description + '\n';
 
     return instructions;
 }
@@ -199,7 +184,7 @@ export function getInstructionForSection(section) {
         instruction += 'Characters:\n';
         for (let i = 0; i < section.characters.length; i++) {
             var character = section.characters[i];
-            instruction += character.name + ' (Fortune ' + character.properties['Happiness'] + ')\n';
+            instruction += character.name + ' (Fortune ' + character.properties['Happiness'].toFixed(1) + ')\n';
         }
     } else {
         // instruction += 'There are no characters in this scene.\n'

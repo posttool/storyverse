@@ -14,15 +14,15 @@ export class Storyline extends Component {
 
     draw() {
         var $top = div(this.el, 'editor-toolbar');
-        this.frameworkSelect = $$sel({ parent: $top, options: FRAMEWORKS.map(c => c.name) });
+        // this.frameworkSelect = $$sel({ parent: $top, options: FRAMEWORKS.map(c => c.name) });
         // this.frameworkSelect.addEventListener('change', this.rewrite.bind(this))
-        this.toneSelect = $$sel({ parent: $top, options: TONE.map(c => c.name) });
+        // this.toneSelect = $$sel({ parent: $top, options: TONE.map(c => c.name) });
         // this.toneSelect.addEventListener('change', this.rewrite.bind(this))
         this.refresh = $$mi({ parent: $top, text: 'refresh' });
         this.refresh.addEventListener('click', this.rewrite.bind(this));
         // todo add selects to top bar
         this.canvasEl = $$({ parent: this.el, class: 'editor-canvas', el: 'canvas' });
-        this.canvasEl.width = "900";
+        this.canvasEl.width = "1100";
         this.canvasEl.height = "600";
         this.ctx = this.canvasEl.getContext('2d');
 
@@ -92,35 +92,34 @@ export class Storyline extends Component {
     }
 
     rewrite() {
-        var framework = this.frameworkSelect.options[this.frameworkSelect.selectedIndex].text;
-        var tone = this.toneSelect.options[this.toneSelect.selectedIndex].text;
+        this.visible(false, this.refresh);
+        this.writing = true;
         var characters = this.uniqueTargets().map(v => v.getData());
         var settings = this.uniqueTargets('settings').map(v => v.getData());
-        var instructions = getPreamble(framework, tone, characters, settings);
-        instructions += 'Format the results as json.'
-        console.log('>' + instructions)
-        this.writing = true;
+        this.writingPreamble = getPreamble(characters, settings);
         this.sectionIndex = 0;
-        this.messages = [];
-        this.storyText = '';
-        this.messages.push({ role: 'user', content: instructions });
+        console.log('--------------rewrite----------------');
         this.rewriteNext();
-        this.visible(false, this.refresh);
     }
 
     rewriteNext() {
-        var instructions = this.sections[this.sectionIndex].writingInstruction;
-        instructions += 'Format the results as json.'
-        console.log('>' + instructions)
-        this.messages.push({ role: 'user', content: instructions });
-        this.parent.services.GPT.Test({ messages: this.messages })
+        var section = this.sections[this.sectionIndex];
+        var messages = [];
+        messages.push({ role: 'user', content: this.writingPreamble });
+        if (this.sectionIndex != 0) {
+            messages.push({ role: 'user', content: 'Here is the story so far:' });
+            for (var i = 0; i < this.sectionIndex; i++) {
+                messages.push({ role: 'user', content: this.sections[i].resultsText });
+            }
+        }
+        messages.push({ role: 'user', content: section.writingInstruction + 'Format the results as json.' });
+        console.log(messages);
+        this.parent.services.GPT.Test({ messages: messages })
             .then((result) => {
                 // var finish_reason = result.data.response.choices[0].finish_reason;
                 var message = result.data.response.choices[0].message;
-                console.log(message.content)
-                this.messages.push(message);
-                this.sections[this.sectionIndex].setWriting(message.content);
-                this.storyText += message.content;
+                section.setWritingResults(message.content);
+                console.log(section.results);
                 this.sectionIndex++;
                 if (this.sectionIndex < this.sections.length) {
                     this.rewriteNext();
@@ -263,8 +262,18 @@ class StorylineSection extends Component {
         this.labelEl.innerText = this.writingInstruction;
     }
 
-    setWriting(w) {
-        this.labelEl.innerText = w;
+    setWritingResults(w) {
+        this.resultsText = w;
+        try {
+            this.results = JSON.parse(w);
+        } catch (e) {
+            console.error(e);
+            this.results = { error: e };
+        }
+        if (this.results.summary)
+            this.labelEl.innerText = this.results.summary;
+        else
+            this.labelEl.innerText = w;
     }
 
     getCharacters() {
