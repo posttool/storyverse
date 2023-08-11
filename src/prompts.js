@@ -99,21 +99,48 @@ export function getInstructionForSection_v1(section) {
 
 const PREAMBLE = `Characters should reflect attributes. 
 Characters mood and behaviors should reflect these attributes. 
-Dont be too literal in your writing about the Character attributes.
+Dont be too literal in your writing about the Character attributes but make sure you reflect them into how the character is written about.
 The attributes are (Fortune)
-Fortune ranges from 0 to 1 with 1 being the "Good Fortune" such as (wealth, health, good luck) and 0 being the "Ill Fortune" such as (sickeness, poverty, dead). 
+Fortune ranges from 0 to 1 with 1 being the "Good Fortune" such as 0 being the "Ill Fortune". Depending on the number, pick from the 
+table below and reflect that feeling into the character state. The character actions, and the character ability to interact with the setting:
+"0:	Desolation, Catastrophe, Abyss, Hopelessness, Tragedy, Ruin, Devastation, Nadir, Misery, Disaster"
+"0.1: Hardship, Struggle, Suffering, Downturn, Decline, Woe, Adversity, Setback, Gloom, Dismay"
+"0.2: Trouble, Worry, Unease, Distress, Challenge, Hurdle, Obstacle, Difficulty, Issue, Problem"
+"0.3: Discontent, Upset, Dissatisfaction, Uneasiness, Concern, Discomfort, Imbalance, Restlessness, Perturbation, Malaise""
+"0.4: Neutral, Average, Steady, Unchanged, Balance, Status-quo, Middle-ground, Regular, Commonplace, Standard""
+"0.5: Contentment, Peace, Stability, Satisfaction, Comfort, Ease, Assurance, Calm, Poise, Security""
+"0.6: Rise, Growth, Progress, Ascent, Advancement, Betterment, Elevation, Uplift, Improvement, Gain""
+"0.7: Joy, Elation, Delight, Triumph, Ecstasy, Success, Achievement, Celebration, Victory, Euphoria""
+"0.8: Bliss, Splendor, Radiance, Pinnacle, Excellence, Peak, Zenith, Majesty, Brilliance, Glory""
+"0.9: Perfection, Nirvana, Paradise, Culmination, Apex, Summit, Transcendence, Utopia, Ideal, Zenith""
+
+If you are getting new Fortune attributes, make sure to reflect it. Your writing should be influeced heavily by the Fortune attribute for each character.  
 `;
 
 const BEGINNING = `Your job is to help orient our readers, make promises to them. Use the following structure to do so: 
-1. Introduce the characters by reflecting their point of view. How they interact with the world. Something that will give the reader an idea of the character attitude. 
-2. Introduce the setting by reflecting sensory details of it. Be unique. Details such as how does it feel, smell, sounds, vibrates, looks like, etc. 
-3. Let the reader know which genre we are using by using a unique detail of the genre to set the mood or tone for the story. 
-Only use between 1 and 3 sentences for this whole section.
+1. Introduce each characters by reflecting their point of view. How they interact with the world. Something that will give the reader an idea of the character attitude. 
+2. Introduce the setting by reflecting sensory details of it. Be unique. Details such as how does it feel, smell, sounds, vibrates, and looks like to the characters. 
+
+3. Write: **GENRE**: followed by the genre you are using by using a unique detail of the genre to set the mood or tone for the story.
+
+Explain to the reader how the Fortune attribute affects each of their characters by writing: FORTUNE, Character name, and a short summary.
+Only use between 1 and 3 short sentences for this whole section.
+At the top of your writing, give a summary using emojis. 
+
 `;
 
-const MIDDLE = `Your job now is to open things up by knocking the character down and bring them up again. 
+const MIDDLE = `Foget about your previous job, now your job now is to open things up by knocking the characters down and bring them up again. 
+Make sure you reflect the new Fortune attributes in your writing. . 
+Get the characers into conflicts, and write about their struggle by picking from the following list the conflicts that best fit the character.
+
+1 “Milieu”: the conflict is about a place, a destination. Your goal as a writer is to not let the characters reach their goal
+2 “Inquiry”: the conflict is about a question that the character has. Your goal as a writer is to not let the charactes reaching the answer they are looking for
+3 “Internal:” The conflict happens from within the character. Your goal as a writer is to not let the characters be stable by internal changel. The change can backfire or making them go awry.
+4 “Events”: The conflict happens from something or someone external to the character. Your goal as a writer is to stop the characters from restoring the status quo. Characters will have fight scenes or disruptions. 
+
+Write about how this new Fortune affects the characters ability to respond to conflicts. Keep reflecting in your writing the genre and tone you picked at the beginning. 
 You have up to 5 sentences. 
-Use phrases like: “Yes but” (implying the character made progress but something pushed back) or “No, and” (implying the character didn’t make progress and something got a bit worse).
+At the end of this section write "**FORTUNE** : explaining to the reader how the new Fortune attribute affects each of their characters"
 `;
 
 const CONFLICT = `Identify what type of conflict the character has. 
@@ -122,16 +149,22 @@ Pick from the following list which conflict fits best for the character.
 2 “Inquiry”: the conflict is about a question that the character has. 
 3 “Internal:” The conflict happens from within the character. 
 4 “Events”: The conflict happens from something or someone external to the character.
+
+Summarize the type of conflict by saying: "**CONFLICT**: and pick the right emoji"
 `;
 
-const END = `Your job is to close any remaining conflict, in the right order as they were opened. 
-You have up to 3 sentences. 
-You need to mirror the opening. 
-We need to know who, where, genre, and mood.
-Things have shifted in the course of the study and the reader needs to understand how. 
-1. How has the character changed? What are the new actions or reflections of the character? 
-2. Introduce the updated setting using sensory details. Do not be explicit in calling sensory details by that label, just describe with detail and precision how such details can help the reader understand the change of setting. 
-3. Introduce the change of mood and tone in the story by the evolution of the character. Give something specific.
+const END = `Forget about your previous job, now your job is to close conflicts, in the right order as they were opened. 
+You have up to 5 sentences. 
+You need to mirror the opening in terms of updating the reader on the new state of the characters and the setting. 
+Things have shifted in the course of the study and the reader needs to understand how. For example, How has the character changed? What are the new actions or reflections of the character? Or introduce the updated setting using sensory details. Do not be explicit in calling sensory details by that label, just describe with detail and precision how such details can help the reader understand the change of setting. 
+Or Introduce the change of mood and tone in the story by the evolution of the character. Give something specific.
+
+Given the different changes in the characters Fortune, tell me what is the story archeotype by writing "** STORY TYPE**: "
+Give me me a summary of the whole story using short bullets. Include emojis, dont be literal about the Fortune attribute in terms of numbers, but write the reflecting of it in the summary. Write "** SUMMARY** :"
+Write: ** RECOMMENDATIONS FROM PUBLISHED AUTHORS TO MAKE YOU BETTER**: Recomend 3 famous stories that have similar story type or character flow in bullet form.""
+
+
+Write: "THE END"
 `;
 // alt end?
 // Your job is to close things down. 
