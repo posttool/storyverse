@@ -156,6 +156,39 @@ Give me me a summary of the whole story using short bullets. Include emojis, don
 const END = `Write: ** RECOMMENDATIONS FROM PUBLISHED AUTHORS TO MAKE YOU BETTER**: Recomend 3 famous stories that have similar story type or character flow in bullet form.""
 Write: "THE END"
 `;
+export const STORY_SO_FAR = `'Here is the story so far:'`;
+
+export const JSON_INSTRUCTION = `Only provide a RFC8259 compliant JSON response following this format. Add attributes when required.
+{
+  "summary": "",
+  "characters": [
+    {
+      "name": "character 1",
+      "point_of_view": "",
+      "attitude": "",
+      "fortune_summary": ""
+    },
+    {
+      "name": "character 2",
+      "point_of_view": "",
+      "attitude": "",
+      "fortune_summary": ""
+    }
+  ],
+  "setting": {
+    "description": "",
+    "sensory_details": {
+      "feel": "",
+      "smell": "",
+      "sound": "",
+      "vibration": "",
+      "appearance": ""
+    }
+  },
+  "genre": "",
+  "fortune_effects": {}
+}
+The JSON response:`
 
 const INSTRUCTIONS = [BEGINNING, CONFLICT_INTRODUCTION, CONFLICT_RESOLUTION, END];
 
@@ -178,7 +211,7 @@ export function getPreamble(characters, settings) {
 }
 
 export function getInstructionForSection(section) {
-    var instruction = INSTRUCTIONS[section.frame -1];
+    var instruction = INSTRUCTIONS[section.frame - 1];
 
     if (section.characters.length != 0) {
         instruction += 'Characters:\n';

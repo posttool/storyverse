@@ -1,5 +1,5 @@
 import { oneOf, $, $$, $$mi, $$sel, div, bezierCurve, Component } from './utils.js';
-import { FRAMEWORKS, TONE, getPreamble, getInstructionForSection } from './prompts.js';
+import { FRAMEWORKS, TONE, JSON_INSTRUCTION, STORY_SO_FAR, getPreamble, getInstructionForSection } from './prompts.js';
 
 
 export class Storyline extends Component {
@@ -104,15 +104,18 @@ export class Storyline extends Component {
 
     rewriteNext() {
         var section = this.sections[this.sectionIndex];
+
         var messages = [];
         messages.push({ role: 'user', content: this.writingPreamble });
         if (this.sectionIndex != 0) {
-            messages.push({ role: 'user', content: 'Here is the story so far:' });
+            messages.push({ role: 'user', content: STORY_SO_FAR });
             for (var i = 0; i < this.sectionIndex; i++) {
                 messages.push({ role: 'user', content: this.sections[i].resultsText });
             }
         }
-        messages.push({ role: 'user', content: section.writingInstruction + 'Format the results as json.' });
+        messages.push({ role: 'user', content: section.writingInstruction  });
+        messages.push({ role: 'user', content: JSON_INSTRUCTION  });
+        
         console.log(messages);
         this.parent.services.GPT.Test({ messages: messages })
             .then((result) => {
