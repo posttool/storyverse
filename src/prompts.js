@@ -129,7 +129,7 @@ At the top of your writing, give a summary using emojis.
 
 `;
 
-const MIDDLE = `Foget about your previous job, now your job now is to open things up by knocking the characters down and bring them up again. 
+const CONFLICT_INTRODUCTION = `Your job now is to open things up by knocking the characters down and bring them up again. 
 Make sure you reflect the new Fortune attributes in your writing. . 
 Get the characers into conflicts, and write about their struggle by picking from the following list the conflicts that best fit the character.
 
@@ -141,9 +141,8 @@ Get the characers into conflicts, and write about their struggle by picking from
 Write about how this new Fortune affects the characters ability to respond to conflicts. Keep reflecting in your writing the genre and tone you picked at the beginning. 
 You have up to 5 sentences. If you have more than 1 Character, create dialogs between them in the following format: [Character X: , Character Y: ]
 At the end of this section write "**FORTUNE** : explaining to the reader how the new Fortune attribute affects each of their characters"
-`;
 
-const CONFLICT = `Identify what type of conflict the character has. 
+Identify what type of conflict the character has. 
 Pick from the following list which conflict fits best for the character. 
 1 “Milieu”: the conflict is about a place, a destination. 
 2 “Inquiry”: the conflict is about a question that the character has. 
@@ -153,7 +152,7 @@ Pick from the following list which conflict fits best for the character.
 Summarize the type of conflict by saying: "**CONFLICT**: and pick the right emoji"
 `;
 
-const END = `Forget about your previous job, now your job is to close conflicts, in the right order as they were opened. 
+const CONFLICT_RESOLUTION = `Your job is to close conflicts, in the right order as they were opened. 
 You have up to 5 sentences. 
 You need to mirror the opening in terms of updating the reader on the new state of the characters and the setting. 
 Things have shifted in the course of the study and the reader needs to understand how. For example, How has the character changed? What are the new actions or reflections of the character? Or introduce the updated setting using sensory details. Do not be explicit in calling sensory details by that label, just describe with detail and precision how such details can help the reader understand the change of setting. 
@@ -161,20 +160,13 @@ Or Introduce the change of mood and tone in the story by the evolution of the ch
 
 Given the different changes in the characters Fortune, tell me what is the story archeotype by writing "** STORY TYPE**: "
 Give me me a summary of the whole story using short bullets. Include emojis, dont be literal about the Fortune attribute in terms of numbers, but write the reflecting of it in the summary. Write "** SUMMARY** :"
-Write: ** RECOMMENDATIONS FROM PUBLISHED AUTHORS TO MAKE YOU BETTER**: Recomend 3 famous stories that have similar story type or character flow in bullet form.""
+`;
 
-
+const END = `Write: ** RECOMMENDATIONS FROM PUBLISHED AUTHORS TO MAKE YOU BETTER**: Recomend 3 famous stories that have similar story type or character flow in bullet form.""
 Write: "THE END"
 `;
-// alt end?
-// Your job is to close things down. 
-// Characters try something and succeed. 
-// Your job is to get the character closer to their goal. 
-// You have up to 5 sentences. 
-// Use phrases like: “Yes, and” (implying the movement towards the goal and the continuation towards the goal) or  “No,but” ( implying that there’s been a reversal that they didn’t think but they still got closer to the goal).
 
-
-const INSTRUCTIONS = [BEGINNING, MIDDLE + CONFLICT, END];
+const INSTRUCTIONS = [BEGINNING, CONFLICT_INTRODUCTION, CONFLICT_RESOLUTION, END];
 
 
 export function getPreamble(frameworkName, toneName, characters, settings) {
@@ -210,7 +202,7 @@ export function getInstructionForSection(section) {
             instruction += character.name + ' (Fortune ' + character.properties['Happiness'] + ')\n';
         }
     } else {
-        instruction += 'There are no characters in this scene.\n'
+        // instruction += 'There are no characters in this scene.\n'
     }
     if (section.settings.length != 0) {
         instruction += 'Setting: ';
@@ -223,7 +215,7 @@ export function getInstructionForSection(section) {
         }
         instruction += '.\n';
     } else {
-        instruction += 'There is no specified setting.\n'
+        // instruction += 'There is no specified setting.\n'
     }
     return instruction;
 }

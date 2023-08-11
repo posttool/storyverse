@@ -12,7 +12,8 @@ const db = admin.firestore();
 const bucket = admin.storage().bucket();
 
 // const MODEL = "gpt-4";
-const MODEL = "gpt-3.5-turbo";
+// const MODEL = "gpt-3.5-turbo";
+const MODEL = "gpt-3.5-turbo-16k";
 // const MODEL = "text-davinci-003";
 // const MODEL = "text-curie-001";
 
@@ -62,7 +63,7 @@ async function ___cquery(openai_api_key, messages, temperature) {
         body: JSON.stringify({
             "model": MODEL,
             "temperature": Number(temperature),
-            "max_tokens": 300,
+            "max_tokens": 3000,
             "top_p": 1,
             "frequency_penalty": 0,
             "presence_penalty": 0,

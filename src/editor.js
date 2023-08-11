@@ -1,6 +1,5 @@
 import { oneOf, $, $$, $$mi, $$sel, div, bezierCurve, Component } from './utils.js';
 import { FRAMEWORKS, TONE, getPreamble, getInstructionForSection } from './prompts.js';
-import { GetVoiceList, TextToSpeech } from './tts.js';
 
 
 export class Storyline extends Component {
@@ -11,10 +10,6 @@ export class Storyline extends Component {
         this.framework = null;
         this.tone = null;
         this.draw();
-        GetVoiceList(o => {
-            console.log(">"+o)
-            this.voices = o.voices;
-        })
     }
 
     draw() {
@@ -34,6 +29,7 @@ export class Storyline extends Component {
         this.midEl = div(this.el, 'editor-mid');
         // var labelsEl = div(this.midEl, 'editor-labels')
         // div(labelsEl, 'center-line')
+        this.addSection(new StorylineSection(this));
         this.addSection(new StorylineSection(this));
         this.addSection(new StorylineSection(this));
         this.addSection(new StorylineSection(this));
@@ -101,6 +97,7 @@ export class Storyline extends Component {
         var characters = this.uniqueTargets().map(v => v.getData());
         var settings = this.uniqueTargets('settings').map(v => v.getData());
         var instructions = getPreamble(framework, tone, characters, settings);
+        instructions += 'Format the results as json.'
         console.log('>' + instructions)
         this.writing = true;
         this.sectionIndex = 0;
@@ -112,9 +109,10 @@ export class Storyline extends Component {
     }
 
     rewriteNext() {
-        var instruction = this.sections[this.sectionIndex].writingInstruction;
-        console.log('>' + instruction)
-        this.messages.push({ role: 'user', content: instruction });
+        var instructions = this.sections[this.sectionIndex].writingInstruction;
+        instructions += 'Format the results as json.'
+        console.log('>' + instructions)
+        this.messages.push({ role: 'user', content: instructions });
         this.parent.services.GPT.Test({ messages: this.messages })
             .then((result) => {
                 // var finish_reason = result.data.response.choices[0].finish_reason;
@@ -127,7 +125,6 @@ export class Storyline extends Component {
                 if (this.sectionIndex < this.sections.length) {
                     this.rewriteNext();
                 } else {
-                    TextToSpeech(this.storyText, oneOf(this.voices).voice_id)
                     this.writing = false;
                     this.visible(true, this.refresh);
                 }
