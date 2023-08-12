@@ -1,5 +1,5 @@
 import { oneOf, $, $$, $$mi, $$sel, div, bezierCurve, Component } from './utils.js';
-import { FRAMEWORKS, TONE, JSON_INSTRUCTION, STORY_SO_FAR, getPreamble, getInstructionForSection } from './prompts.js';
+import { FRAMEWORKS, TONE, STORY_SO_FAR, getPreamble, getInstructionForSection } from './prompts.js';
 
 
 export class Storyline extends Component {
@@ -114,7 +114,6 @@ export class Storyline extends Component {
             }
         }
         messages.push({ role: 'user', content: section.writingInstruction  });
-        messages.push({ role: 'user', content: JSON_INSTRUCTION  });
         
         console.log(messages);
         this.parent.services.GPT.Test({ messages: messages })
@@ -243,7 +242,7 @@ class StorylineSection extends Component {
         for (let p in this.targets) {
             let cdata = Object.assign({}, this.targets[p].getData());
             let cprops = Object.assign({}, this.targets[p].value.props);
-            cprops.Happiness = 1 - Math.max(0, this.targets[p].p.y / 180);
+            cprops.X = 1 - Math.max(0, this.targets[p].p.y / 180);
             cdata.properties = cprops;
             characterData.push(cdata);
         }
@@ -274,7 +273,7 @@ class StorylineSection extends Component {
             this.results = { error: e };
         }
         if (this.results.summary)
-            this.labelEl.innerText = this.results.summary;
+            this.labelEl.innerText = this.results.summary+'\n\n'+w;
         else
             this.labelEl.innerText = w;
     }

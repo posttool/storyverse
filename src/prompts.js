@@ -33,69 +33,8 @@ export const TONE = [
 ]
 
 
-export function getPreamble_v1(frameworkName, toneName, characters, settings) {
-    var framework = getByName(FRAMEWORKS, frameworkName);
-    var tone = getByName(TONE, toneName);
 
-    var instructions = 'You are storybot, a story writing agent. I will give you scenes with characters and settings and you will write a story about it.\n';
-    instructions += 'Characters will be listed with attributes. Make sure that the scenes reflect these attributes. ';
-    instructions += 'The attributes are (Happiness), (Role Strength), (Dynamism), (Conflict). ';
-    instructions += 'Happiness ranges from 0 to 1 with 1 being the happiest and 0 being the most tragic. ';
-    instructions += 'Role Strength ranges from 0 to 3 with 3 being a major character and 0 being a minor character. ';
-    instructions += 'Dynamism ranges from 0 to 3 with 3 being a crazy and 0 being nada. ';
-    instructions += 'Conflict of 0 is external, 1 is internal , and 2 is situational.\n';
-
-    instructions += 'This is the cast of characters:\n';
-    characters.forEach(character => {
-        instructions += character.name + ' ' + character.description + '\n';
-    });
-
-    instructions += 'These are the settings:\n';
-    settings.forEach(settings => {
-        instructions += settings.name + ' ' + settings.description + '\n';
-    });
-
-    instructions += 'Use the following framework and tone to write the story.\n';
-    instructions += framework.name + ': ' + framework.description + '\n';
-    instructions += tone.name + ': ' + tone.description + '\n';
-
-    return instructions;
-}
-
-export function getInstructionForSection_v1(section) {
-    var instruction = ''
-    instruction += 'Write an outline of major events in scene ' + section.frame + ' of ' + section.frameTotal + '.\n';
-    instruction += 'Use less than ' + Math.floor(section.width * 4) + ' events.\n\n'; // why you ignore me so much
-    if (section.characters.length != 0) {
-        instruction += 'Characters:\n';
-        for (let i = 0; i < section.characters.length; i++) {
-            var character = section.characters[i];
-            instruction += character.name + ':\n';
-            for (let q in character.properties) { // properties could be accessed by name for more control
-                instruction += '  (' + q + ': ' + character.properties[q].toFixed(1) + ')\n';
-            }
-            instruction += '\n'
-        }
-    } else {
-        instruction += 'There are no characters in this scene.\n'
-    }
-    if (section.settings.length != 0) {
-        instruction += 'Setting: ';
-        for (let i = 0; i < section.settings.length; i++) {
-            var setting = section.settings[i];
-            instruction += setting.name;
-            if (i != section.settings.length - 1) {
-                instruction += ', ';
-            }
-        }
-        instruction += '.\n';
-    } else {
-        instruction += 'There is no specified setting.\n'
-    }
-    return instruction;
-}
-
-/// v2
+/// v3 json
 
 const PREAMBLE = `Characters should reflect attributes. 
 Characters mood and behaviors should reflect these attributes. 
@@ -115,56 +54,27 @@ table below and reflect that feeling into the character state. The character act
 "0.9: Perfection, Nirvana, Paradise, Culmination, Apex, Summit, Transcendence, Utopia, Ideal, Zenith""
 
 If you are getting new Fortune attributes, make sure to reflect it. Your writing should be influeced heavily by the Fortune attribute for each character.
+
 `;
 
 const BEGINNING = `Your job is to help orient our readers, make promises to them. Use the following structure to do so: 
-1. Introduce each characters by reflecting their point of view. How they interact with the world. Something that will give the reader an idea of the character attitude. 
-2. Introduce the setting by reflecting sensory details of it. Be unique. Details such as how does it feel, smell, sounds, vibrates, and looks like to the characters. 
-3. Write: **GENRE**: followed by the genre you are using by using a unique detail of the genre to set the mood or tone for the story.
+Introduce each characters by reflecting their point of view.  
+Introduce the setting by reflecting sensory details of it. Be unique. Details such as how does it feel, smell, sounds, vibrates, and looks like to the characters. 
+Write: followed by the genre you are using by using a unique detail of the genre to set the mood or tone for the story.
 
-Explain to the reader how the Fortune attribute affects each of their characters by writing: FORTUNE, Character name, and a short summary.
+Explain to the reader how the Fortune attribute affects each of their characters by writing
 Only use between 1 and 3 short sentences for this whole section.
-At the top of your writing, give a summary using text and emojis. 
-`;
+At the top of your writing, give a summary using text and emojis.
 
-const CONFLICT_INTRODUCTION = `Your job  is to open things up by knocking the characters down and bring them up again. 
-Make sure you reflect the new Fortune attributes in your writing. . 
-Get the characers into conflicts, and write about their struggle by picking from the following list the conflicts that best fit the character.
+`
 
-1 “Milieu”: the conflict is about a place, a destination. Your goal as a writer is to not let the characters reach their goal
-2 “Inquiry”: the conflict is about a question that the character has. Your goal as a writer is to not let the charactes reaching the answer they are looking for
-3 “Internal:” The conflict happens from within the character. Your goal as a writer is to not let the characters be stable by internal changel. The change can backfire or making them go awry.
-4 “Events”: The conflict happens from something or someone external to the character. Your goal as a writer is to stop the characters from restoring the status quo. Characters will have fight scenes or disruptions. 
-
-Write about how this new Fortune affects the characters ability to respond to conflicts. Keep reflecting in your writing the genre and tone you picked at the beginning. 
-You have up to 5 sentences. If you have more than 1 Character, create dialogs between them in the following format: [Character X: , Character Y: ]
-At the end of this section write "**FORTUNE** : explaining to the reader how the new Fortune attribute affects each of their characters"
-
-Summarize the type of conflict by saying: "**CONFLICT**: and pick the right emoji"
-`;
-
-const CONFLICT_RESOLUTION = `Your job is to close conflicts, in the right order as they were opened. 
-You have up to 5 sentences. 
-You need to mirror the opening in terms of updating the reader on the new state of the characters and the setting. 
-Things have shifted in the course of the study and the reader needs to understand how. For example, How has the character changed? What are the new actions or reflections of the character? Or introduce the updated setting using sensory details. Do not be explicit in calling sensory details by that label, just describe with detail and precision how such details can help the reader understand the change of setting. 
-Or Introduce the change of mood and tone in the story by the evolution of the character. Give something specific.
-
-Given the different changes in the characters Fortune, tell me what is the story archeotype by writing "** STORY TYPE**: "
-Give me me a summary of the whole story using short bullets. Include emojis, dont be literal about the Fortune attribute in terms of numbers, but write the reflecting of it in the summary. Write "** SUMMARY** :"
-`;
-
-const END = `Write: ** RECOMMENDATIONS FROM PUBLISHED AUTHORS TO MAKE YOU BETTER**: Recomend 3 famous stories that have similar story type or character flow in bullet form.""
-Write: "THE END"
-`;
-export const STORY_SO_FAR = `'Here is the story so far:'`;
-
-export const JSON_INSTRUCTION = `Only provide a RFC8259 compliant JSON response following this format. Add attributes when required.
+const BEGINNING_JSON = `Only provide a RFC8259 compliant JSON response following this format. 
 {
-  "summary": "",
+  "summary": "the summary for this section",
   "characters": [
     {
       "name": "character 1",
-      "point_of_view": "",
+      "point_of_view": "The point of view for this character, how they interact with the world. Something that will give the reader an idea of the character attitude.",
       "attitude": "",
       "fortune_summary": ""
     },
@@ -186,11 +96,115 @@ export const JSON_INSTRUCTION = `Only provide a RFC8259 compliant JSON response 
     }
   },
   "genre": "",
-  "fortune_effects": {}
+  "fortune": {}
 }
 The JSON response:`
 
+const CONFLICT_INTRODUCTION = `You are writing another section of the story.
+Your job is to open things up by knocking the characters down and bring them up again. 
+Make sure you reflect the new Fortune attributes in your writing. . 
+Get the characers into conflicts, and write about their struggle by picking from the following list the conflicts that best fit the character.
+
+1 “Milieu”: the conflict is about a place, a destination. Your goal as a writer is to not let the characters reach their goal
+2 “Inquiry”: the conflict is about a question that the character has. Your goal as a writer is to not let the charactes reaching the answer they are looking for
+3 “Internal:” The conflict happens from within the character. Your goal as a writer is to not let the characters be stable by internal changel. The change can backfire or making them go awry.
+4 “Events”: The conflict happens from something or someone external to the character. Your goal as a writer is to stop the characters from restoring the status quo. Characters will have fight scenes or disruptions. 
+
+Write about how this new Fortune affects the characters ability to respond to conflicts. Keep reflecting in your writing the genre and tone you picked at the beginning. 
+You have up to 5 sentences. If you have more than 1 Character, create dialogs between them.
+At the end of this section, explain to the reader how the new Fortune attribute affects each of their characters"
+
+Summarize the type of conflict with text and the right emoji.
+
+`;
+
+const CONFLICT_INTRODUCTION_JSON = `Only provide a RFC8259 compliant JSON response following this format. 
+{
+  "summary": "the summary for this section",
+  "conflict_type": "Milieu, Inquiry, Internal, or Events",
+  "conflict_description": "",
+  "dialog": [
+    {
+      "name": "character 1",
+      "prompt": ""
+    },
+    {
+      "name": "character 2",
+      "prompt": ""
+    },
+    {
+      "name": "character 1",
+      "prompt": ""
+    },
+    {
+      "name": "character 3",
+      "prompt": ""
+    }
+  ],
+  "fortune": [
+    {
+      "name": "character 1",
+      "description": ""
+    },
+    {
+      "name": "character 2",
+      "description": ""
+    }
+  ]
+}
+The JSON response:`
+
+const CONFLICT_RESOLUTION = `Your job is to close conflicts, in the right order as they were opened. 
+You have up to 5 sentences. 
+You need to mirror the opening in terms of updating the reader on the new state of the characters and the setting. 
+Things have shifted in the course of the study and the reader needs to understand how. 
+For example, How has the character changed? What are the new actions or reflections of the character? 
+Or introduce the updated setting using sensory details. Do not be explicit in calling sensory details by that label, just describe with detail and precision how such details can help the reader understand the change of setting. 
+Or Introduce the change of mood and tone in the story by the evolution of the character. Give something specific.
+
+Given the different changes in the characters Fortune, tell me what is the story archeotype.
+Give me me a summary of the whole story using short bullets. 
+Include emojis, dont be literal about the Fortune attribute in terms of numbers, but write the reflecting of it in the summary. 
+
+`;
+
+const CONFLICT_RESOLUTION_JSON = `Only provide a RFC8259 compliant JSON response following this format. 
+{
+  "summary": "the summary for this section",
+  "story_archeotype": "",
+  "conflict_description": "",
+  "setting": {
+    "description": "",
+    "sensory_details": {
+      "feel": "",
+      "smell": "",
+      "sound": "",
+      "vibration": "",
+      "appearance": ""
+    }
+  },
+  
+}
+The JSON response:`;
+
+const END = `Recomend 3 famous stories that have similar story type or character flow in bullet form."`;
+
+const END_JSON = `Only provide a RFC8259 compliant JSON response following this format. 
+{
+ "summary": "the summary of the ending",
+  "recommendations": [
+    {"title": "Title of Book", "author": "", "why": ""},
+    {"title": "", "author": "", "why": ""},
+    {"title": "", "author": "", "why": ""},
+  ]
+}
+The JSON response:`;
+
+export const STORY_SO_FAR = `'Here is the story so far:'`;
+
+
 const INSTRUCTIONS = [BEGINNING, CONFLICT_INTRODUCTION, CONFLICT_RESOLUTION, END];
+const INSTRUCTIONS_JSON = [BEGINNING_JSON, CONFLICT_INTRODUCTION_JSON, CONFLICT_RESOLUTION_JSON, END_JSON];
 
 export function getPreamble(characters, settings) {
 
@@ -214,14 +228,15 @@ export function getInstructionForSection(section) {
     var instruction = INSTRUCTIONS[section.frame - 1];
 
     if (section.characters.length != 0) {
-        instruction += 'Characters:\n';
+        instruction += 'The Characters:\n';
         for (let i = 0; i < section.characters.length; i++) {
             var character = section.characters[i];
-            instruction += character.name + ' (Fortune ' + character.properties['Happiness'].toFixed(1) + ')\n';
+            instruction += character.name + ' (Fortune ' + character.properties['X'].toFixed(1) + ')\n';
         }
     } else {
         // instruction += 'There are no characters in this scene.\n'
     }
+    instruction += '\n';
     if (section.settings.length != 0) {
         instruction += 'Setting: ';
         for (let i = 0; i < section.settings.length; i++) {
@@ -235,5 +250,7 @@ export function getInstructionForSection(section) {
     } else {
         // instruction += 'There is no specified setting.\n'
     }
+    instruction += '\n';
+    instruction += INSTRUCTIONS_JSON[section.frame - 1];
     return instruction;
 }
