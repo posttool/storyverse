@@ -83,39 +83,52 @@ characters allows the reader to have a clear understanding of the characters poi
 Constraints for writing:
 1. For the prose, you have up to 3 sentences. No more. The more conscise the sentences the better. You can combine the introduction of the 
 character and the setting into the same sentences. No need to be literal about introducing the characters and the setttings seperately. If you combine them is better, be conscise. 
-2. Use as many emojis to write a summary of it at the end of your writing. 
+2. Never say the Fortune attribute numerically.
 
 `
 
 const BEGINNING_JSON = `Only provide a RFC8259 compliant JSON response following this format. 
 {
-  "summary": "the summary for this section",
+  "emoji": "the summary for this section using emojis",
+  "summary": "the summary for this section following the constraints mentioned",
   "characters": [
     {
       "name": "character 1",
       "point_of_view": "The point of view for this character, how they interact and react with the world. Unique actions and reactions that will give the reader an idea of the character attitude.",
-      "attitude": "",
-      "fortune_summary": ""
+      "attitude": "Describe the character way of thinking or feeling about what is going through. Typically reflected in the characters behavior. Give me 3 words",
+      "fortune_summary": "Never say the Fortune attribute numerically, translate it into words that reflect the character state in the story so far"
     },
     {
       "name": "character 2",
-      "point_of_view": "",
-      "attitude": "",
-      "fortune_summary": ""
+      "point_of_view": "The point of view for this character, how they interact and react with the world. Unique actions and reactions that will give the reader an idea of the character attitude.",
+      "attitude": "Describe the character way of thinking or feeling about what is going through. Typically reflected in the characters behavior. Give me 3 words",
+      "fortune_summary": "Never say the Fortune attribute numerically, translate it into words that reflect the character state in the story so far"
     }
   ],
   "setting": {
-    "description": "",
+    "description": "5 words describing the setting",
     "sensory_details": {
-      "feel": "",
-      "smell": "",
-      "sound": "",
-      "vibration": "",
-      "appearance": ""
+      "feel": "Description of how the setting feels for the characters",
+      "smell": "Description of how the setting smells for the characters",
+      "sound": "Description of how the setting smells for the characters",
+      "appearance": "Description of how the setting looks like for the characters"
     }
   },
-  "genre": "",
-  "fortune": {}
+  "genre": "Pick one of the most popular genres that best matches the characters and settings",
+  "fortune":[
+    {
+      "name": "character 1",
+      "description": "Never say the Fortune attribute numerically, translate it into words that reflect the character state in the story so far""
+    },
+    {
+      "name": "character 2",
+      "description": "Never say the Fortune attribute numerically, translate it into words that reflect the character state in the story so far""
+    }
+    {
+      "name": "between characters ",
+      "description": "Describe the relationship between the characters. Reflect their state of Fortune in your writing"
+    }
+  ]
 }
 The JSON response:`
 
@@ -139,15 +152,43 @@ Constraints for writing:
 1. For the prose, you have up to 5 sentences. No more. The more conscise the sentences the better. Write about how this new Fortune affects the characters ability to respond to conflicts.
 2. Create dialogues between characters. Be conscise. 
 3. The reader should understand how the Fortune attribute change the characters from this section and the previous one. 
-4. Use as many emojis to write a summary of it at the end of your writing. 
+4. Never say the Fortune attribute numerically.
 
 
 `;
 
 const CONFLICT_INTRODUCTION_JSON = `Only provide a RFC8259 compliant JSON response following this format. 
 {
-  "summary": "the summary for this section following the constraints stated",
+  "emoji": "the summary for this section using emojis",
+  "summary": "the summary for this section following the constraints mentioned. Never mentioned the Fortune attribute numerically",
+    "characters": [
+      {
+        "name": "character 1",
+        "point_of_view": "The point of view for this character, how they interact and react with the world. Unique actions and reactions that will give the reader an idea of the character attitude.",
+        "attitude": "Describe the character way of thinking or feeling about what is going through. Typically reflected in the characters behavior. Give me 3 words",
+        "fortune_summary": "Never say the Fortune attribute numerically, translate it into words that reflect the character state in the story so far"
+      },
+      {
+        "name": "character 2",
+        "point_of_view": "The point of view for this character, how they interact and react with the world. Unique actions and reactions that will give the reader an idea of the character attitude.",
+        "attitude": "Describe the character way of thinking or feeling about what is going through. Typically reflected in the characters behavior. Give me 3 words",
+        "fortune_summary": "Never say the Fortune attribute numerically, translate it into words that reflect the character state in the story so far"
+      }
+    ],
+   
+    "setting": {
+      "description": "5 words describing the setting",
+      "sensory_details": {
+        "feel": "Description of how the setting feels for the characters",
+        "smell": "Description of how the setting smells for the characters",
+        "sound": "Description of how the setting smells for the characters",
+        "appearance": "Description of how the setting looks like for the characters"
+      }
+    },
+    "genre": "Continue with the same genre from the previous section",
+			
   "conflict_type": "Milieu, Inquiry, Internal, or Events",
+ 
   "conflict_description": "",
   "dialog": [
     {
@@ -170,11 +211,15 @@ const CONFLICT_INTRODUCTION_JSON = `Only provide a RFC8259 compliant JSON respon
   "fortune": [
     {
       "name": "character 1",
-      "description": ""
+      "description": "Never say the Fortune attribute numerically, translate it into words that reflect the character state in the story so far""
     },
     {
       "name": "character 2",
-      "description": ""
+      "description": "Never say the Fortune attribute numerically, translate it into words that reflect the character state in the story so far""
+    }
+    {
+      "name": "between characters ",
+      "description": "Describe the relationship between the characters. Reflect their state of Fortune in your writing"
     }
   ]
 }
@@ -206,6 +251,7 @@ Constraints for writing:
 
 const CONFLICT_RESOLUTION_JSON = `Only provide a RFC8259 compliant JSON response following this format. 
 {
+  "emoji": "the summary for this section using emojis",
   "summary": "the summary for this section following the constraints stated",
   "story_archeotype": "",
   "conflict_description": "",
