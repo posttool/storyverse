@@ -36,9 +36,10 @@ export const TONE = [
 
 /// v3 json
 
-const PREAMBLE = `Characters should reflect attributes. 
-Characters mood and behaviors should reflect these attributes. 
-Dont be too literal in your writing about the Character attributes but make sure you reflect them into how the character is written about.
+const PREAMBLE = `
+
+Characters should reflect attributes. Characters mood and behaviors should reflect these attributes. 
+Do not be too literal in your writing about the Character attributes but make sure you reflect them into how the character is written about.
 The attributes are (Fortune)
 Fortune ranges from 0 to 1 with 1 being the "Good Fortune" such as 0 being the "Ill Fortune". Depending on the number, pick from the 
 table below and reflect that feeling into the character state. The character actions, and the character ability to interact with the setting:
@@ -52,19 +53,37 @@ table below and reflect that feeling into the character state. The character act
 "0.7: Joy, Elation, Delight, Triumph, Ecstasy, Success, Achievement, Celebration, Victory, Euphoria""
 "0.8: Bliss, Splendor, Radiance, Pinnacle, Excellence, Peak, Zenith, Majesty, Brilliance, Glory""
 "0.9: Perfection, Nirvana, Paradise, Culmination, Apex, Summit, Transcendence, Utopia, Ideal, Zenith""
+If you are getting new Fortune attributes, make sure to reflect them. Your writing should be influeced heavily by the Fortune attribute for each character.
 
-If you are getting new Fortune attributes, make sure to reflect it. Your writing should be influeced heavily by the Fortune attribute for each character.
+You are writing a 4 Arc structure. It contains:
+1. BEGINNING
+2. CONFRONTATION
+3. RESOLUTION
+4. END
+
 
 `;
 
-const BEGINNING = `Your job is to help orient our readers, make promises to them. Use the following structure to do so: 
-Introduce each characters by reflecting their point of view.  
-Introduce the setting by reflecting sensory details of it. Be unique. Details such as how does it feel, smell, sounds, vibrates, and looks like to the characters. 
-Write: followed by the genre you are using by using a unique detail of the genre to set the mood or tone for the story.
+const BEGINNING = `
 
-Explain to the reader how the Fortune attribute affects each of their characters by writing
-Only use between 1 and 3 short sentences for this whole section.
-At the top of your writing, give a summary using text and emojis.
+Section name: BEGINNING
+Sections after this: CONFRONTATION, RESOLUTION, END
+Sections before this: none
+Your job: Orient readers by introducing the story characters and settings. 
+
+Criteria to do so: 
+1. Introduce each characters by reflecting their point of view. Be creative on this, no need to be literal about it. 
+Think about about something they may be thinking, or doing, think of it as the tip of the iceberg, that lets readers get a good sense of what the character is about. A successful introduction of the
+characters allows the reader to have a clear understanding of the characters point of view and their attitude towards the world. 
+2. Introduce the setting by reflecting sensory details of it. Be unique. Details such as how does it feel, smell, sounds, vibrates, and looks like to the characters. 
+3. Pick a genre that best reflects the Characters evolution through the story and reflect it by picking the right words or examples
+4. Reflect how the Fortune attribute affects each of the characters in your writing. 
+6. Only use between 1 to 3 sentences for this whole section.
+
+Constraints for writing:
+1. For the prose, you have up to 3 sentences. No more. The more conscise the sentences the better. You can combine the introduction of the 
+character and the setting into the same sentences. No need to be literal about introducing the characters and the setttings seperately. If you combine them is better, be conscise. 
+2. Use as many emojis to write a summary of it at the end of your writing. 
 
 `
 
@@ -74,7 +93,7 @@ const BEGINNING_JSON = `Only provide a RFC8259 compliant JSON response following
   "characters": [
     {
       "name": "character 1",
-      "point_of_view": "The point of view for this character, how they interact with the world. Something that will give the reader an idea of the character attitude.",
+      "point_of_view": "The point of view for this character, how they interact and react with the world. Unique actions and reactions that will give the reader an idea of the character attitude.",
       "attitude": "",
       "fortune_summary": ""
     },
@@ -100,27 +119,34 @@ const BEGINNING_JSON = `Only provide a RFC8259 compliant JSON response following
 }
 The JSON response:`
 
-const CONFLICT_INTRODUCTION = `You are writing another section of the story.
-Your job is to open things up by knocking the characters down and bring them up again. 
-Make sure you reflect the new Fortune attributes in your writing. . 
-Get the characers into conflicts, and write about their struggle by picking from the following list the conflicts that best fit the character.
+const CONFLICT_INTRODUCTION = `
 
-1 “Milieu”: the conflict is about a place, a destination. Your goal as a writer is to not let the characters reach their goal
-2 “Inquiry”: the conflict is about a question that the character has. Your goal as a writer is to not let the charactes reaching the answer they are looking for
-3 “Internal:” The conflict happens from within the character. Your goal as a writer is to not let the characters be stable by internal changel. The change can backfire or making them go awry.
-4 “Events”: The conflict happens from something or someone external to the character. Your goal as a writer is to stop the characters from restoring the status quo. Characters will have fight scenes or disruptions. 
+Section name: CONFRONTATION
+Sections after this: RESOLUTION, END
+Sections before this: BEGINNING
+Your job: Create conflicts between characters and themselves, characters and other characters, or characters with the settings.
 
-Write about how this new Fortune affects the characters ability to respond to conflicts. Keep reflecting in your writing the genre and tone you picked at the beginning. 
-You have up to 5 sentences. If you have more than 1 Character, create dialogs between them.
-At the end of this section, explain to the reader how the new Fortune attribute affects each of their characters"
 
-Summarize the type of conflict with text and the right emoji.
+Criteria to do so: 
+1. Make sure you reflect how the characters change by exposing the new Fortune attributes in your writing for all the characters. 
+2. Get the characers into conflicts, pick from the following list
+- “Milieu”: the milieu conflict is about a place, a destination. The struggle of characters in reaching their goal. Characters will get disoriented, confused, lost. 
+- “Inquiry”: the inquiry conflict is about a question that the character has. The struggle of the characters reaching answers they are looking for. Characters will get confused, and upset.
+- “Internal:” The conflict happens from within the character. The struggle of the characters in reaching internal stability. Characters will have changes backfire.
+- “Events”: The conflict happens from something or someone external to the character. The struggle of the characters in restoring the status quo. Characters will have fight scenes or disruptions. 
+
+Constraints for writing:
+1. For the prose, you have up to 5 sentences. No more. The more conscise the sentences the better. Write about how this new Fortune affects the characters ability to respond to conflicts.
+2. Create dialogues between characters. Be conscise. 
+3. The reader should understand how the Fortune attribute change the characters from this section and the previous one. 
+4. Use as many emojis to write a summary of it at the end of your writing. 
+
 
 `;
 
 const CONFLICT_INTRODUCTION_JSON = `Only provide a RFC8259 compliant JSON response following this format. 
 {
-  "summary": "the summary for this section",
+  "summary": "the summary for this section following the constraints stated",
   "conflict_type": "Milieu, Inquiry, Internal, or Events",
   "conflict_description": "",
   "dialog": [
@@ -154,23 +180,33 @@ const CONFLICT_INTRODUCTION_JSON = `Only provide a RFC8259 compliant JSON respon
 }
 The JSON response:`
 
-const CONFLICT_RESOLUTION = `Your job is to close conflicts, in the right order as they were opened. 
-You have up to 5 sentences. 
-You need to mirror the opening in terms of updating the reader on the new state of the characters and the setting. 
-Things have shifted in the course of the study and the reader needs to understand how. 
-For example, How has the character changed? What are the new actions or reflections of the character? 
-Or introduce the updated setting using sensory details. Do not be explicit in calling sensory details by that label, just describe with detail and precision how such details can help the reader understand the change of setting. 
-Or Introduce the change of mood and tone in the story by the evolution of the character. Give something specific.
+const CONFLICT_RESOLUTION = `
 
-Given the different changes in the characters Fortune, tell me what is the story archeotype.
-Give me me a summary of the whole story using short bullets. 
-Include emojis, dont be literal about the Fortune attribute in terms of numbers, but write the reflecting of it in the summary. 
+Section name: RESOLUTION
+Sections after this: END
+Sections before this: BEGINNING, CONFLICT
+Your job: Resolve conflicts and end the story.
+
+Criteria to do so:
+1. Make sure you reflect how the characters change by exposing the new Fortune attributes in your writing for all the characters. 
+2. Resolve the conflicts you opened in the previous sections. 
+3. Close the story by reflecting how the characters and settings changed throughout the story. 
+4. Reflect Characters changes by showing the new actions or new reflections after what happened to them in the previous sections.
+5. Reflect Settings changes by giving sensory details. Do not be explicit in calling sensory details by that label, just describe with detail and precision how such details can help the reader understand the change of setting. 
+
+
+Constraints for writing:
+1. For the prose, you have up to 5 sentences. No more. The more conscise the sentences the better. Write about how this new Fortune affects the characters ability to respond to conflicts.
+2. Create dialogues between characters. Be conscise. 
+3. The reader should understand how the Fortune attribute change the characters from this section and the previous one. 
+4. Use as many emojis to write a summary of it at the end of your writing. 
+
 
 `;
 
 const CONFLICT_RESOLUTION_JSON = `Only provide a RFC8259 compliant JSON response following this format. 
 {
-  "summary": "the summary for this section",
+  "summary": "the summary for this section following the constraints stated",
   "story_archeotype": "",
   "conflict_description": "",
   "setting": {
@@ -187,7 +223,22 @@ const CONFLICT_RESOLUTION_JSON = `Only provide a RFC8259 compliant JSON response
 }
 The JSON response:`;
 
-const END = `Recomend 3 famous stories that have similar story type or character flow in bullet form."`;
+const END = `
+
+Section name: END
+Sections after this: none
+Sections before this: BEGINNING, CONFLICT, RESOLUTION
+Your job: Wrap up by giving a paragraph summary of the story. Recommend related readings to the reader. 
+
+
+Criteria to do so:
+1. Recomend 3 famous stories that have similar story type or character flow in bullet form."
+
+Constraints for writing:
+1. Be conscise and reflect in the summary how the characters changes specified by the Fortune attribute. 
+2. Include dialogues in the summary.
+
+`;
 
 const END_JSON = `Only provide a RFC8259 compliant JSON response following this format. 
 {
