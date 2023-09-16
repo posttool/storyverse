@@ -1,4 +1,4 @@
-var ELEVEN_LABS_API_KEY = '';
+var ELEVEN_LABS_API_KEY = 'fd08f05f91d0d9787d111e955553548a';
 // var bSpeechInProgress = false;
 var oSpeechRecognizer = null
 

@@ -168,7 +168,7 @@ export class Component {
 
 
 
-export class List extends Component {
+export class DbItemList extends Component {
     constructor(el_options, cell_class) {
         super(el_options);
         this.value = [];

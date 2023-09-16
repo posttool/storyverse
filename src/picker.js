@@ -1,21 +1,13 @@
-import { $, $$, $$mi, $$sel, Component, List, Toggle, Selected } from './utils.js';
+import { $, $$, $$mi, $$sel, Component, DbItemList, Toggle, Selected } from './utils.js';
 
 import {
     getFirestore,
     collection,
-    addDoc,
     query,
     where,
-    startAt,
     orderBy,
     limit,
-    limitToFirst,
-    limitToLast,
     onSnapshot,
-    getDocs,
-    doc,
-    getDoc,
-    serverTimestamp,
 } from 'firebase/firestore';
 
 
@@ -30,7 +22,7 @@ export class Picker extends Component {
         this.toolbarEl = $$({ parent: this.el, class: 'picker-toolbar' });
         this.delEl = $$mi({ parent: this.toolbarEl, class: 'button-delete', text: 'delete' });
         // this.collapseEl = $$mi({ parent: this.toolbarEl, class: 'button-collapse', text: 'chevron_left' });
-        this.objects = new List({ parent: this.el, class: 'picker-list' }, PickerCell);
+        this.objects = new DbItemList({ parent: this.el, class: 'picker-list' }, PickerCell);
         this.add = new PickerAddCell(this);
         this.formsEl = $$({ parent: $('editor') });
 
@@ -74,6 +66,7 @@ export class Picker extends Component {
                 snapshot.docChanges().forEach(function (change) {
                     self.dataChangeHandler(change);
                 });
+                self.redraw();
             }, function (e) {
                 console.error('snapshot error Picker.load');
                 console.error(e);
@@ -171,7 +164,7 @@ export class PickerCell extends Component {
         e.dataTransfer.setData("id", this.value.id);
     }
     _dragend(e) {
-       console.log("dragend>"+e.dataTransfer.getData("id"));
+        console.log("dragend>" + e.dataTransfer.getData("id"));
     }
 }
 
@@ -207,9 +200,9 @@ export class PickerForm extends Component {
     draw() {
         var $r0 = $$({ parent: this.el, class: 'row' });
         this.closeButton = $$mi({ parent: $r0, text: 'close' });
-        var $r1 = $$({ parent: this.el, class: 'row' });
-        $$({ parent: $r1, text: 'Type', class: 'form-label' })
-        this.typeEl = $$sel({ parent: $r1, options: this.types });
+        // var $r1 = $$({ parent: this.el, class: 'row' });
+        // $$({ parent: $r1, text: 'Type', class: 'form-label' })
+        // this.typeEl = $$sel({ parent: $r1, options: this.types });
         var $r2 = $$({ parent: this.el, class: 'row' });
         $$({ parent: $r2, text: 'Name', class: 'form-label' })
         this.nameEl = $$({ parent: $r2, el: 'input', class: 'form-input' });
@@ -223,37 +216,36 @@ export class PickerForm extends Component {
         //
         this.closeButton.addEventListener('click', e => { this.parent.remove(this); });
         this.colors.addListener('change', this.setValueFromUi.bind(this));
-        this.nameEl.addEventListener('change', this.setValueFromUi.bind(this));
-        this.descriptionEl.addEventListener('change', this.setValueFromUi.bind(this));
+        this.nameEl.addEventListener('keyup', this.setValueFromUi.bind(this));
+        this.descriptionEl.addEventListener('keyup', this.setValueFromUi.bind(this));
     }
 
     setValueFromUi() {
-        if (this.waiting) {
-            this.waitingQueued = true;
-            return;
-        }
-        this.waiting = true;
-        this.value = {
-            id: this.value ? this.value.id : null,
-            type: this.typeEl.options[this.typeEl.selectedIndex].text,
-            name: this.nameEl.value,
-            description: this.descriptionEl.value,
-            color: this.colors.value
-        }
-        this.parent.services.Picker.Update(this.value).then(results => {
-            this.value.id = results.data.id;
-            this.redraw();
-            this.waiting = false;
-            if (this.waitingQueued) {
-                this.waitingQueued = false;
+        clearTimeout(this.callSaveId);
+        this.callSaveId = setTimeout(() => {
+            if (this.isSaving) {
                 this.setValueFromUi();
+            } else {
+                this.isSaving = true;
+                this.value = {
+                    id: this.value ? this.value.id : null,
+                    // type: this.typeEl.options[this.typeEl.selectedIndex].text,
+                    name: this.nameEl.value,
+                    description: this.descriptionEl.value,
+                    color: this.colors.value
+                }
+                this.parent.services.Picker.Update(this.value).then(results => {
+                    this.value.id = results.data.id;
+                    this.redraw();
+                    this.isSaving = false;
+                });
             }
-        });
+        }, 500);
     }
 
     redraw() {
         if (this.value) {
-            this.typeEl.selectedOption = this.types.indexOf(this.value.type);
+            // this.typeEl.selectedOption = this.types.indexOf(this.value.type);
             this.nameEl.value = this.value.name;
             this.descriptionEl.textContent = this.value.description;
             this.colors.value = this.value.color;

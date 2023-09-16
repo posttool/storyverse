@@ -1,6 +1,6 @@
-import { oneOf, $, $$, $$mi, $$sel, div, bezierCurve, Component } from './utils.js';
+import { oneOf, $, $$, $$mi, div, bezierCurve, Component } from './utils.js';
 import { FRAMEWORKS, TONE, STORY_SO_FAR, getPreamble, getInstructionForSection } from './prompts.js';
-
+import { Timeline } from './timeline.js';
 
 export class Storyline extends Component {
     constructor(parent) {
@@ -21,60 +21,61 @@ export class Storyline extends Component {
         this.refresh = $$mi({ parent: $top, text: 'refresh' });
         this.refresh.addEventListener('click', this.rewrite.bind(this));
         // todo add selects to top bar
-        this.canvasEl = $$({ parent: this.el, class: 'editor-canvas', el: 'canvas' });
-        this.canvasEl.width = "1100";
-        this.canvasEl.height = "600";
-        this.ctx = this.canvasEl.getContext('2d');
+        // this.canvasEl = $$({ parent: this.el, class: 'editor-canvas', el: 'canvas' });
+        // this.canvasEl.width = "1100";
+        // this.canvasEl.height = "600";
+        // this.ctx = this.canvasEl.getContext('2d');
+        this.timeline = new Timeline();
 
-        this.midEl = div(this.el, 'editor-mid');
+        // this.midEl = div(this.el, 'editor-mid');
         // var labelsEl = div(this.midEl, 'editor-labels')
         // div(labelsEl, 'center-line')
-        this.addSection(new StorylineSection(this));
-        this.addSection(new StorylineSection(this));
-        this.addSection(new StorylineSection(this));
-        this.addSection(new StorylineSection(this));
+        // this.addSection(new StorylineSection(this));
+        // this.addSection(new StorylineSection(this));
+        // this.addSection(new StorylineSection(this));
+        // this.addSection(new StorylineSection(this));
 
-        this.propsEl = div(this.el, 'editor-props');
+        // this.propsEl = div(this.el, 'editor-props');
     }
 
-    addSection(section) {
-        this.sections.push(section);
-        section.addListener('change', (e) => {
-            this.redraw(section);
-        });
-        this.addDragger(this.sections.length - 1);
-    }
+    // addSection(section) {
+    //     this.sections.push(section);
+    //     section.addListener('change', (e) => {
+    //         this.redraw(section);
+    //     });
+    //     this.addDragger(this.sections.length - 1);
+    // }
 
     redraw(section) {
-        if (section) {
-            section.redraw();
-        } else {
-            this.sections.forEach(section => {
-                section.redraw();
-            });
-        }
+        // if (section) {
+        //     section.redraw();
+        // } else {
+        //     this.sections.forEach(section => {
+        //         section.redraw();
+        //     });
+        // }
         // curvey lines
-        this.ctx.clearRect(0, 0, 1000, 1000);
-        var uniqueTargets = this.uniqueTargets();
-        uniqueTargets.forEach(target => {
-            var points = [];
-            var color;
-            var xOffset = 20;
-            this.sections.forEach((section, i) => {
-                var t = section.targets[target.value.id];
-                if (t) {
-                    var w = section.getWidth();
-                    var p = { x: t.p.x + xOffset, y: t.p.y + 50 };
-                    points.push(p);
-                    color = t.getData().color;
-                }
-                xOffset += section.getWidth() + 20;
-            });
-            this.ctx.setLineDash([3, 3]);
-            this.ctx.lineWidth = 2;
-            this.ctx.strokeStyle = color;
-            bezierCurve(this.ctx, points);
-        });
+        // this.ctx.clearRect(0, 0, 1000, 1000);
+        // var uniqueTargets = this.uniqueTargets();
+        // uniqueTargets.forEach(target => {
+        //     var points = [];
+        //     var color;
+        //     var xOffset = 20;
+        //     this.sections.forEach((section, i) => {
+        //         var t = section.targets[target.value.id];
+        //         if (t) {
+        //             var w = section.getWidth();
+        //             var p = { x: t.p.x + xOffset, y: t.p.y + 50 };
+        //             points.push(p);
+        //             color = t.getData().color;
+        //         }
+        //         xOffset += section.getWidth() + 20;
+        //     });
+        //     this.ctx.setLineDash([3, 3]);
+        //     this.ctx.lineWidth = 2;
+        //     this.ctx.strokeStyle = color;
+        //     bezierCurve(this.ctx, points);
+        // });
     }
 
     uniqueTargets(group = 'targets') {
@@ -113,8 +114,8 @@ export class Storyline extends Component {
                 messages.push({ role: 'user', content: this.sections[i].resultsText });
             }
         }
-        messages.push({ role: 'user', content: section.writingInstruction  });
-        
+        messages.push({ role: 'user', content: section.writingInstruction });
+
         console.log(messages);
         this.parent.services.GPT.Test({ messages: messages })
             .then((result) => {
@@ -172,25 +173,25 @@ export class Storyline extends Component {
         target.select(true);
         this.lastSelect = target;
 
-        this.propsEl.innerText = '';
-        this.props = new TargetProps(this.propsEl, target);
-        this.props.parent = this;
-        this.props.redraw();
-        this.props.addListener('delete', target => {
-            var section = target.parent;
-            if (target.value.type == 'character') {
-                delete section.targets[target.value.id]
-            } else {
-                delete section.settings[target.value.id]
-            }
-            target.el.innerHTML = '';
-            this.propsEl.innerText = '';
-            this.redraw();
-        });
-        this.props.addListener('change', e => {
-            this.props.target.value.props = this.props.getValues();
-            this.props.target.parent.redraw();
-        })
+        // this.propsEl.innerText = '';
+        // this.props = new TargetProps(this.propsEl, target);
+        // this.props.parent = this;
+        // this.props.redraw();
+        // this.props.addListener('delete', target => {
+        //     var section = target.parent;
+        //     if (target.value.type == 'character') {
+        //         delete section.targets[target.value.id]
+        //     } else {
+        //         delete section.settings[target.value.id]
+        //     }
+        //     target.el.innerHTML = '';
+        //     this.propsEl.innerText = '';
+        //     this.redraw();
+        // });
+        // this.props.addListener('change', e => {
+        //     this.props.target.value.props = this.props.getValues();
+        //     this.props.target.parent.redraw();
+        // })
     }
 
 }
@@ -261,7 +262,7 @@ class StorylineSection extends Component {
             settings: settingData
         });
 
-        this.labelEl.innerText = this.writingInstruction;
+        // this.labelEl.innerText = this.writingInstruction;
     }
 
     setWritingResults(w) {
@@ -271,11 +272,44 @@ class StorylineSection extends Component {
         } catch (e) {
             console.error(e);
             this.results = { error: e };
+            return;
         }
-        if (this.results.summary)
-            this.labelEl.innerText = this.results.summary+'\n\n'+w;
-        else
+
+        if (this.results.summary) {
+            this.labelEl.innerText = this.results.emoji + '\n' + this.results.summary + '\n\n' + w;
+        } else {
             this.labelEl.innerText = w;
+        }
+
+        if (this.results.characters) {
+            for (var i = 0; i < this.results.characters.length; i++) {
+                var c = this.results.characters[i];
+                var t = this.getTargetByName(c.name);
+                if (t) {
+                    t.setGeneratedProps(c);
+                } else {
+                    console.log("results indicate character named " + c.name + " - not found")
+                }
+            }
+        }
+        if (this.results.dialog) {
+            for (var i = 0; i < this.results.dialog.length; i++) {
+                var c = this.results.dialog[i];
+                var t = this.getTargetByName(c.name);
+                if (t) {
+                    t.setGeneratedDialog(c);
+                } else {
+                    console.log("results indicate character named " + c.name + " - not found")
+                }
+            }
+        }
+        if (this.results.setting && this.results.setting.sensory_details) {
+            var skeys = Object.keys(this.settings);
+            if (skeys.length != 0) {
+                var t = this.settings[skeys[0]];
+                t.setGeneratedProps(this.results.setting.sensory_details);
+            }
+        }
     }
 
     getCharacters() {
@@ -284,6 +318,15 @@ class StorylineSection extends Component {
             c.push(this.targets[p].getData());
         }
         return c;
+    }
+
+    getTargetByName(name) {
+        for (var p in this.targets) {
+            if (this.targets[p].getData().name.toLowerCase() == name.toLowerCase()) {
+                return this.targets[p];
+            }
+        }
+        return null;
     }
 
     getSettings() {
@@ -333,7 +376,7 @@ class StorylineSection extends Component {
 class Target extends Component {
     constructor(type, id, el) {
         super({ parent: el });
-        this.value = { type: type, id: id, size: 1, props: {} };
+        this.value = { type: type, id: id, size: 1, props: {}, propsGen: null };
         this.draw();
     }
 
@@ -361,13 +404,20 @@ class Target extends Component {
         this.dotEl.addEventListener('dragend', (e) => {
             this.redraw(); // TODO handle situ where item wasnt dropped on a valid target
         });
+        //
+        this.labelEl = div(this.el, 'label', 'test');
     }
 
     position(p) {
         this.p = p;
-        this.dotEl.style.position = 'absolute';
-        this.dotEl.style.left = p.x + 'px';
-        this.dotEl.style.top = p.y + 'px';
+        this._position(this.dotEl, p);
+        this._position(this.labelEl, {x: p.x +40, y: p.y + 10});
+    }
+
+    _position(el, p) {
+        el.style.position = 'absolute';
+        el.style.left = p.x + 'px';
+        el.style.top = p.y + 'px';
     }
 
     select(b) {
@@ -378,11 +428,16 @@ class Target extends Component {
             this.dotEl.classList.remove('selected');
         }
         this.parent.select(b);
+        this.redraw();
     }
 
     redraw() {
-        this.dotEl.style.backgroundColor = this.getData().color;
+        var data = this.getData();
+        this.dotEl.style.backgroundColor = data.color;
         this.dotEl.style.opacity = 1;
+        if (this.value.propsGen == null)
+            this.labelEl.innerText = data.name;
+        this.visible(this.selected, this.labelEl);
     }
 
     setDataProvider(dp) {
@@ -394,14 +449,42 @@ class Target extends Component {
         if (this.dataProvider) {
             return this.dataProvider.getValueById(this.value.id);
         } else {
-            return { color: '#333' };
+            return { color: '#333', name: '-' };
         }
     }
 
+    setGeneratedProps(p) {
+        this.value.propsGen = p;
+        this.labelEl.innerText = '';
+        new GProps(this.labelEl, p);
+    }
 
+    setGeneratedDialog(p) {
+        console.log("DIALOG");
+        console.log(p);
+        this.redraw();
+    }
 
 }
+class GProps extends Component {
+    constructor(parentEl, value){
+        super({ parent: parentEl, class: 'g-props' });
+        this.value = value;
+        this.draw();
+    }
 
+    draw() {
+        this.propsEl = div(this.el, 'props');
+        this.infoEl = div(this.el, 'info');
+
+        Object.keys(this.value).forEach(k=>{
+            var a = div(this.propsEl, 'label', k);
+            a.addEventListener('mouseover', e=> {
+                this.infoEl.innerText = this.value[k];
+            });
+        });
+    }
+}
 
 class TargetProps extends Component {
     constructor(parentEl, target) {
@@ -459,8 +542,9 @@ class TargetProps extends Component {
             }
         }
     }
-
 }
+
+
 
 const rowH = 22;
 const yOffset = 8;

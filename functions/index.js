@@ -146,7 +146,7 @@ exports.PickerAdd = functions
             updated: Firestore.FieldValue.serverTimestamp(),
             state: 'public',
             owner: uid,
-            type: data.type,
+            // type: data.type,
             name: data.name,
             description: data.description
         };
@@ -205,7 +205,7 @@ exports.PickerUpdate = functions
                 updated: Firestore.FieldValue.serverTimestamp(),
                 state: 'public',
                 owner: uid,
-                type: data.type,
+                // type: data.type,
                 name: data.name,
                 description: data.description,
                 color: data.color
@@ -220,7 +220,7 @@ exports.PickerUpdate = functions
             const nounSnap = await nounDoc.get();
             const response = await nounDoc.update({
                 updated: Firestore.FieldValue.serverTimestamp(),
-                type: data.type,
+                // type: data.type,
                 name: data.name,
                 description: data.description,
                 color: data.color

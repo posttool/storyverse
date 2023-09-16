@@ -7,13 +7,9 @@
 }
 
 
-@font-face {
-    font-family: PPAcma;
-    src: url("PPAcma-Light.otf") format("opentype");
-}
 
 :root {
-    --bg-color: rgba(32, 33, 37, 0.50);
+    --bg-color: #fff;  
     --dark-color: #333;
     --med-color: #888;
     --light-color: #ACACBE;
@@ -29,7 +25,6 @@
     font-size: 12px;
     box-sizing: border-box;
     text-rendering: geometricPrecision;
-    color: white;
     user-select: none;
 }
 
@@ -42,35 +37,28 @@
 }
 
 html {
-    height: 100%;
 }
+
 body {
-    background: linear-gradient(180deg, #030303 0%, #232937 100%);
-    margin: 20px;
-    height: 100%;
 }
 
 #root {
-    height: 100%;
 }
 
 #logo {
     display: flex;
     align-items: center;
     width: 250px;
-    color: #FFF;
-    font-family: PPAcma;
     font-size: 35px;
     font-style: normal;
     font-weight: 100;
     letter-spacing: -2.8px;
+    color: white;
 }
 
 .title {
-    font-family: PPAcma;
-    font-size: 35px;
+    font-size: 24px;
     font-style: normal;
-    font-weight: 100;
 
 }
 
@@ -104,22 +92,15 @@ body {
 }
 
 #main-tabs .tab .title {
-    color: #999;
-    font-family: PPAcma;
-    font-size: 24px;
-    font-style: normal;
-    font-weight: 200;
-    letter-spacing: -1.8px;
+    font-size:14px;
 }
 
 #main-tabs .tab.selected {
     padding: 6px 180px 4px 12px;
     background: var(--bg-color);
-    border-radius: 6px 6px 0 0;
 }
 
 #main-tabs .tab.selected .title {
-    color: white;
 }
 
 .workspace {
@@ -137,8 +118,8 @@ body {
     flex-direction: row-reverse;
     align-items: center;
     position: relative;
-    top: -40px;
-    left: 200px;
+    top: -28px;
+    left: 182px;
     width: 70px;
     height: 0;
     /* background-color: #f00; */
@@ -147,7 +128,6 @@ body {
 .picker-toolbar .title {
     width: 80%;
     color: #FFF;
-    font-family: PPAcma;
     font-size: 30px;
     font-style: normal;
     font-weight: 100;
@@ -155,8 +135,6 @@ body {
 }
 
 .picker-cell {
-    border-radius: 100px;
-    background: #202125;
     width: 100%;
     padding: 12px;
     display: flex;
@@ -166,7 +144,7 @@ body {
 }
 
 .picker-cell:hover {
-    background: #363739;
+    background: #eee;
 }
 
 .picker-cell-min {
@@ -177,8 +155,6 @@ body {
 .icon {
     width: 32px;
     height: 32px;
-    border-radius: 16px;
-    background-color: white;
     margin: 0 16px 0 0;
 }
 
@@ -213,8 +189,7 @@ body {
     left: 0;
     width: 20px;
     height: 20px;
-    border-radius: 10px;
-    background-color: black;
+    border: 1px solid #333;
     cursor: pointer;
 }
 
@@ -224,8 +199,7 @@ body {
     left: 5px;
     width: 10px;
     height: 10px;
-    border-radius: 10px;
-    background-color: white;
+    background-color: black;
 }
 
 .row {
@@ -251,7 +225,6 @@ body {
 select {
     border: none;
     /* 1px solid var(--select-border); */
-    border-radius: 6px;
     font-size: 12px;
     cursor: pointer;
     background-color: transparent;
@@ -262,11 +235,10 @@ select {
 input,
 textarea {
     border: 1px solid var(--select-border);
-    font-size: 12px;
+    font-size: 18px;
     background-color: transparent;
     padding: 4px 10px 4px 10px;
     width: 200px;
-    font-size: 12px;
 }
 
 textarea {
@@ -282,26 +254,37 @@ textarea {
 .color-choice {
     width: 26px;
     height: 26px;
-    border-radius: 13px;
     background-color: white;
     margin: 0 10px 10px 0;
-    border: 3px solid var(--dark-color);
+    border: 3px solid var(--bg-color);
 }
 
 .color-choice.selected {
-    border: 3px solid white;
+    border: 3px solid #333;
 }
 
 .editor-props {
     position: absolute;
-    top: 480px;
-    left: 10px;
+    top: 0;
+    right: 10px;
     /* background-color: rgba(32, 33, 37, 0.60);
     filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25)); */
     background-color: var(--selected-bg);
     padding: 10px;
-    width: 800px;
-    height: 150px;
+    width: 200px;
+    height: 100%;
+    overflow-y: scroll;
+}
+
+.gprops {
+display: flex;
+flex-direction: column;
+}
+.gprops .props{
+
+}
+.gprops .info{
+    
 }
 
 .target-props {
@@ -317,7 +300,6 @@ textarea {
 }
 .target-prop {
     width: 115px;
-    border-radius: 10px;
     margin: 0 15px 0 0;
     border-top: 3px solid #999;
     background: #202125;
@@ -367,7 +349,6 @@ textarea {
 .target-prop .dot {
     width: 10px;
     height: 10px;
-    border-radius: 10px;
     background-color: white;
     position: absolute;
     top: 0;
@@ -410,7 +391,6 @@ textarea {
 }
 
 .place {
-    border-radius: 24px;
     border: 1px dashed #888;
     width: 48px;
     height: 48px;
@@ -418,7 +398,6 @@ textarea {
 }
 
 .place-small {
-    border-radius: 12px;
     width: 24px;
     height: 24px;
     margin: 0 0 0 5px;
@@ -440,7 +419,6 @@ textarea {
 .stuff-item {
     width: 80px;
     height: 80px;
-    border-radius: 8px;
     padding: 10px;
     margin: 10px 0 10px 10px;
     color: white;
@@ -459,7 +437,6 @@ textarea {
 button.green {
     border: 0;
     background-color: #068447;
-    border-radius: 4px;
     color: white;
     padding: 3px 10px 3px 10px;
     visibility: hidden;
@@ -558,8 +535,7 @@ button.green {
     width: 100%;
     height: 150px;
     margin: 0 0 10px 0;
-    overflow-y:scroll;
-
+    font-size: 14px;
 }
 
 .section .text2 {
