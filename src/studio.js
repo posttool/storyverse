@@ -1,12 +1,12 @@
 import { $, $$, Component, Selected } from './utils.js';
-import { Storyline } from './editor.js';
-import { Picker, PickerForm } from './picker.js';
+import { CharacterAttributes } from './attributes.js';
+import { Picker } from './picker.js';
 import { Preview } from './preview.js';
 import { Account } from './account.js';
+import { Timeline } from './timeline.js';
 
-const PICKER = 'Power Picker';
-const MIXER = 'Magic Mixer';
-const PLAYER = 'Super Story';
+const PICKER = 'Story Cast';
+const EDITOR = 'Cast Attributes';
 
 
 export class Studio extends Component {
@@ -28,10 +28,13 @@ export class Studio extends Component {
             this.picker = new Picker(this);
             this.picker.toolbar(true);
             this.picker.load();
-            this.editor = new Storyline(this);
+            this.picker.addListener('select', e=>{
+                this.timeline.data = e;
+            })
+            this.timeline = new Timeline();
+            this.editor = new CharacterAttributes(this);
             this.editor.visible(false);
             this.player = new Preview(this);
-            this.player.visible(false);
         });
         this.account.addListener('logout', e => {
             this.visible(true, $("not-logged-in"));
@@ -46,22 +49,11 @@ export class Studio extends Component {
         switch (this.mainTabs.value) {
             case PICKER:
                 this.picker.visible(true);
-                this.picker.toolbar(true);
-                this.picker.draggable(false);
                 this.editor.visible(false);
-                $('picker').style.width = '282px';
                 break;
-            case MIXER:
+            case EDITOR:
                 this.picker.visible(true);
-                this.picker.toolbar(false);
-                this.picker.draggable(true);
                 this.editor.visible(true);
-                this.editor.redraw();
-                $('picker').style.width = '100px';
-                break;
-            case PLAYER:
-                this.picker.visible(false);
-                this.editor.visible(false);
                 break;
         }
     }
@@ -75,7 +67,7 @@ class MainTabs extends Selected {
     constructor() {
         super(
             { parent: $('main-tabs'), class: 'row' },
-            [PICKER, MIXER, PLAYER],
+            [PICKER, EDITOR],
             TabCell
         );
     }

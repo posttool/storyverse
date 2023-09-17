@@ -208,7 +208,8 @@ exports.PickerUpdate = functions
                 // type: data.type,
                 name: data.name,
                 description: data.description,
-                color: data.color
+                color: data.color,
+                icon: data.icon
             };
             const response = await db.collection('noun').add(nounData);
             nounData.id = response.id;
@@ -223,7 +224,8 @@ exports.PickerUpdate = functions
                 // type: data.type,
                 name: data.name,
                 description: data.description,
-                color: data.color
+                color: data.color,
+                icon: data.icon
             });
             const nounData = nounSnap.data();
             nounData.id = data.id;

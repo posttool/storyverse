@@ -1,4 +1,4 @@
-import { $, $$, $$mi, $$sel, Component, DbItemList, Toggle, Selected } from './utils.js';
+import { $, $$, $$mi, $$sel, Component, DbItemList, Toggle, Selected, div } from './utils.js';
 
 import {
     getFirestore,
@@ -13,35 +13,24 @@ import {
 
 export class Picker extends Component {
     constructor(parent) {
-        super({ parent: $('picker'), class: 'picker' }, parent);
-        this.forms = [];
+        super({ parent: $('picker'), class: 'row' }, parent);
         this.draw();
     }
 
     draw() {
-        this.toolbarEl = $$({ parent: this.el, class: 'picker-toolbar' });
-        this.delEl = $$mi({ parent: this.toolbarEl, class: 'button-delete', text: 'delete' });
-        // this.collapseEl = $$mi({ parent: this.toolbarEl, class: 'button-collapse', text: 'chevron_left' });
-        this.objects = new DbItemList({ parent: this.el, class: 'picker-list' }, PickerCell);
-        this.add = new PickerAddCell(this);
-        this.formsEl = $$({ parent: $('editor') });
+        var col1 = div(this.el, 'col1');
+        this.toolbarEl = $$({ parent: col1, class: 'picker-toolbar' });
+        this.objects = new DbItemList({ parent: col1, class: 'picker-list' }, PickerCell);
+        this.add = new PickerAddCell(this, col1);
 
-        this.delEl.addEventListener('click', (e) => {
-            this.delEl.innerText = 'sync';
-            var idsOfSelected = [];
-            this.objects.getSelected().forEach(v => {
-                idsOfSelected.push(v.id);
-            });
-            //this.delEl shows animation and selected go greyish...
-            this.parent.services.Picker.Delete(idsOfSelected).then(results => {
-                setTimeout(this.redraw.bind(this), 1000);
-            });
-        });
-        this.objects.addListener('select', (e) => {
-            this.redraw();
-        });
-        this.objects.addListener('click', (e) => {
-            this.showPickerForm(e);
+        var col2 = div(this.el, 'col2');
+        this.formsEl = $$({ parent: col2 });
+
+        // this.objects.addListener('select', (e) => {
+        //     this.redraw();
+        // });
+        this.objects.addListener('click', (index) => {
+            this.showPickerForm(index);
         });
         this.add.addListener('click', e => {
             this.showPickerForm();
@@ -50,9 +39,9 @@ export class Picker extends Component {
     }
 
     redraw() {
-        var sel = this.objects.getSelected();
-        this.delEl.innerText = 'delete';
-        this.delEl.style.visibility = sel.length == 0 ? 'hidden' : 'visible';
+        // var sel = this.objects.getSelected();
+        // this.delEl.innerText = 'delete';
+        // this.delEl.style.visibility = sel.length == 0 ? 'hidden' : 'visible';
     }
 
     load() {
@@ -84,11 +73,13 @@ export class Picker extends Component {
     }
 
     showPickerForm(index) {
-        var form = new PickerForm(this.formsEl, this.parent);
+        this.formsEl.innerText = '';
+        this.form = new PickerForm(this.formsEl, this.parent);
         if (index != null) {
-            form.value = this.objects.value[index]
+            this.form.value = this.objects.value[index];
+            this.emit('select', this.form.value);
         }
-        form.redraw();
+        this.form.redraw();
     }
 
     visible(b) {
@@ -98,7 +89,7 @@ export class Picker extends Component {
 
     toolbar(b) {
         super.visible(b, this.toolbarEl);
-        this.objects.selectable(b);
+        // this.objects.selectable(b);
         this.add.visible(b);
     }
 
@@ -122,23 +113,19 @@ export class PickerCell extends Component {
 
     draw() {
         this.iconEl = $$({ parent: this.el, class: 'icon' });
+        this.iconImg = $$({ parent: this.iconEl, el: 'img' });
         this.textEl = $$({ parent: this.el, class: 'textc' });
         $$({ parent: this.textEl, class: 'text', text: this.value.name })
         $$({ parent: this.textEl, class: 'text2', text: this.value.description })
-        this.toggle = new Toggle(this);
-        this.toggle.addListener('change', v => {
-            this.emit('change');
-        });
-        // this.el.addEventListener('click', e => {
-        //     this.emit('click');
-        // });
-        this.el.addEventListener('dblclick', e => {
+        this.el.addEventListener('click', e => {
             this.emit('click');
         });
     }
 
     redraw() {
         this.iconEl.style.backgroundColor = this.value.color;
+        if (this.value.icon)
+            this.iconImg.src =  this.value.icon;
     }
 
     selectable(b) {
@@ -149,38 +136,20 @@ export class PickerCell extends Component {
         else
             this.el.classList.remove('picker-cell-min');
     }
-    draggable(b) {
-        if (b) {
-            this.iconEl.draggable = 'true';
-            this.iconEl.addEventListener('dragstart', this._dragstart.bind(this));
-            this.iconEl.addEventListener('dragend', this._dragend.bind(this));
-        } else {
-            this.iconEl.draggable = 'false';
-            this.iconEl.removeEventListener('dragstart', this._dragstart);
-            this.iconEl.removeEventListener('dragend', this._dragend);
-        }
-    }
-    _dragstart(e) {
-        e.dataTransfer.setData("id", this.value.id);
-    }
-    _dragend(e) {
-        console.log("dragend>" + e.dataTransfer.getData("id"));
-    }
 }
 
 
 export class PickerAddCell extends Component {
-    constructor(parent) {
-        super({ parent: parent.el, class: 'picker-cell' }, parent);
+    constructor(parent, parentEl) {
+        super({ parent: parentEl, class: 'picker-cell' }, parent);
         this.draw();
     }
 
     draw() {
         this.titleEl = $$({ parent: this.el, class: 'icon' });
-        $$mi({ parent: this.titleEl, text: 'add_circle', class: 'black-text padding-small' });
+        $$mi({ parent: this.titleEl, text: 'add_circle', class: 'black-text padding-smal big-icon' });
         this.textEl = $$({ parent: this.el, class: 'textc' });
-        $$({ parent: this.textEl, class: 'text', text: 'Add a new place, thing...' })
-        $$({ parent: this.textEl, class: 'text2', text: 'Grab whatever' });
+        $$({ parent: this.textEl, class: 'text', text: 'Add ...' })
         this.el.addEventListener('click', e => {
             this.emit('click');
         });
@@ -198,24 +167,38 @@ export class PickerForm extends Component {
     }
 
     draw() {
-        var $r0 = $$({ parent: this.el, class: 'row' });
-        this.closeButton = $$mi({ parent: $r0, text: 'close' });
-        // var $r1 = $$({ parent: this.el, class: 'row' });
-        // $$({ parent: $r1, text: 'Type', class: 'form-label' })
-        // this.typeEl = $$sel({ parent: $r1, options: this.types });
         var $r2 = $$({ parent: this.el, class: 'row' });
         $$({ parent: $r2, text: 'Name', class: 'form-label' })
         this.nameEl = $$({ parent: $r2, el: 'input', class: 'form-input' });
+
         var $r3 = $$({ parent: this.el, class: 'row' });
-        $$({ parent: $r3, text: 'Description', class: 'form-label' })
+        $$({ parent: $r3, class: 'form-label', text: 'Description' });
         this.descriptionEl = $$({ parent: $r3, el: 'textarea', class: 'form-textarea' });
+
         var $r4 = $$({ parent: this.el, class: 'row' });
-        $$({ parent: $r4, text: 'Color', class: 'form-label' })
+        $$({ parent: $r4, class: 'form-label', text: 'Color' })
         this.colors = new Colors($r4);
 
+        var $r5 = $$({ parent: this.el, class: 'row' });
+        $$({ parent: $r5, class: 'form-label', text: 'Icon' });
+        this.icon = $$({ parent: $r5, el: 'img' });
+        var chooseIcon = $$({ parent: $r5, text: 'Choose', el: 'button' })
+
+        this.icons = new Icons(document.body);
+        this.icons.visible(false);
+
+        chooseIcon.addEventListener('click', e=>{
+            this.icons.visible(true);
+        });
+
+        // delete
+        // this.parent.services.Picker.Delete(idsOfSelected).then(results => {
+        // });
+
         //
-        this.closeButton.addEventListener('click', e => { this.parent.remove(this); });
+        // this.closeButton.addEventListener('click', e => { this.parent.remove(this); });
         this.colors.addListener('change', this.setValueFromUi.bind(this));
+        this.icons.addListener('change', this.setValueFromUi.bind(this));
         this.nameEl.addEventListener('keyup', this.setValueFromUi.bind(this));
         this.descriptionEl.addEventListener('keyup', this.setValueFromUi.bind(this));
     }
@@ -226,16 +209,18 @@ export class PickerForm extends Component {
             if (this.isSaving) {
                 this.setValueFromUi();
             } else {
-                this.isSaving = true;
                 this.value = {
                     id: this.value ? this.value.id : null,
                     // type: this.typeEl.options[this.typeEl.selectedIndex].text,
                     name: this.nameEl.value,
                     description: this.descriptionEl.value,
-                    color: this.colors.value
+                    color: this.colors.value,
+                    icon: this.icons.value
                 }
+                this.isSaving = true;
                 this.parent.services.Picker.Update(this.value).then(results => {
                     this.value.id = results.data.id;
+                    this.icons.visible(false);
                     this.redraw();
                     this.isSaving = false;
                 });
@@ -250,6 +235,9 @@ export class PickerForm extends Component {
             this.descriptionEl.textContent = this.value.description;
             this.colors.value = this.value.color;
             this.colors.redraw();
+            this.icons.value = this.value.icon;
+            this.icon.src = this.value.icon;
+            this.icons.redraw();
         }
     }
 }
@@ -288,3 +276,461 @@ class ColorCell extends Component {
         }
     }
 }
+
+
+class Icons extends Selected {
+    constructor(parentEl) {
+        super(
+            { parent: parentEl, class: 'icons-picker' }, 
+            Array.from(ICONS, (icon) => ICON_BASEPATH + icon), 
+            IconCell);
+    }
+}
+
+class IconCell extends Component {
+    constructor(parent, png) {
+        super({ parent: parent.el, el: 'img', class: 'icon-choice' }, parent);
+        this.value = png;
+        this.draw();
+    }
+
+    draw() {
+        this.el.addEventListener('click', e => {
+            this.emit('click', this);
+        })
+        this.redraw();
+    }
+
+    redraw() {
+        this.el.src =  this.value;
+        if (this.selected) {
+            this.el.classList.add('selected');
+        } else {
+            this.el.classList.remove('selected');
+        }
+    }
+}
+
+const ICON_BASEPATH = 'img/smiley-people/'
+const ICONS = [
+    "alien.png",
+    "amazed-face.png",
+    "amusing-face.png",
+    "anguished-face.png",
+    "anxious-face.png",
+    "astonished-face.png",
+    "astronaut-1.png",
+    "astronaut-2.png",
+    "baby-1.png",
+    "baby-2.png",
+    "baby-3.png",
+    "baby-angel-1.png",
+    "baby-angel-2.png",
+    "backhand-index-pointing-down-1.png",
+    "backhand-index-pointing-down-2.png",
+    "backhand-index-pointing-left-1.png",
+    "backhand-index-pointing-left-2.png",
+    "backhand-index-pointing-right-1.png",
+    "backhand-index-pointing-right-2.png",
+    "backhand-index-pointing-up-1.png",
+    "backhand-index-pointing-up-2.png",
+    "beaming-face-with-smiling-eyes.png",
+    "bikini.png",
+    "boy-1.png",
+    "boy-2.png",
+    "boy-3.png",
+    "bride-with-veil-1.png",
+    "bride-with-veil-2.png",
+    "bust-in-silhouette.png",
+    "busts-in-silhouette.png",
+    "cat-face-with-tears-of-joy.png",
+    "cat-face-with-wry-smile.png",
+    "clapping-hands-1.png",
+    "clapping-hands-2.png",
+    "closed-umbrella.png",
+    "clown-face.png",
+    "confounded-face.png",
+    "confused-face.png",
+    "construction-worker.png",
+    "couple-with-heart-man-man-1.png",
+    "couple-with-heart-man-man-2.png",
+    "couple-with-heart-woman-man-1.png",
+    "couple-with-heart-woman-man-2.png",
+    "couple-with-heart-woman-woman-1.png",
+    "couple-with-heart-woman-woman-2.png",
+    "cowboy-hat-face.png",
+    "crazy-face.png",
+    "crossed-fingers-1.png",
+    "crossed-fingers-2.png",
+    "crown.png",
+    "crying-cat-face.png",
+    "crying-face.png",
+    "detective-1.png",
+    "detective-2.png",
+    "determined-face.png",
+    "disappointed-face.png",
+    "dizzy-face.png",
+    "downcast-face-with-sweat.png",
+    "dress.png",
+    "drooling-face-1.png",
+    "drooling-face-2.png",
+    "ear.png",
+    "exploding-head.png",
+    "expressionless-face.png",
+    "eye.png",
+    "eyes.png",
+    "face-blowing-a-kiss.png",
+    "face-savoring-food.png",
+    "face-screaming-in-fear.png",
+    "face-vomiting.png",
+    "face-with-head-bandage.png",
+    "face-with-medical-mask.png",
+    "face-with-monocle.png",
+    "face-with-raised-eyebrow.png",
+    "face-with-rolling-eyes.png",
+    "face-with-steam-from-nose.png",
+    "face-with-symbols-on-mouth.png",
+    "face-with-tears-of-joy.png",
+    "face-with-thermometer.png",
+    "face-with-tongue.png",
+    "face-without-mouth.png",
+    "family-man-boy-1.png",
+    "family-man-boy-2.png",
+    "family-man-boy-boy-1.png",
+    "family-man-boy-boy-2.png",
+    "family-man-girl-1.png",
+    "family-man-girl-2.png",
+    "family-man-girl-boy-1.png",
+    "family-man-girl-boy-2.png",
+    "family-man-girl-girl-1.png",
+    "family-man-girl-girl-2.png",
+    "family-man-man-boy-1.png",
+    "family-man-man-boy-2.png",
+    "family-man-man-boy-boy-1.png",
+    "family-man-man-boy-boy-2.png",
+    "family-man-man-girl-1.png",
+    "family-man-man-girl-2.png",
+    "family-man-man-girl-boy-1.png",
+    "family-man-man-girl-boy-2.png",
+    "family-man-man-girl-girl-1.png",
+    "family-man-man-girl-girl-2.png",
+    "family-man-woman-boy-1.png",
+    "family-man-woman-boy-2.png",
+    "family-man-woman-boy-boy-1.png",
+    "family-man-woman-boy-boy-2.png",
+    "family-man-woman-girl-1.png",
+    "family-man-woman-girl-2.png",
+    "family-man-woman-girl-boy-1.png",
+    "family-man-woman-girl-boy-2.png",
+    "family-man-woman-girl-girl-1.png",
+    "family-man-woman-girl-girl-2.png",
+    "family-woman-boy-1.png",
+    "family-woman-boy-2.png",
+    "family-woman-boy-boy-1.png",
+    "family-woman-boy-boy-2.png",
+    "family-woman-girl-1.png",
+    "family-woman-girl-2.png",
+    "family-woman-girl-boy-1.png",
+    "family-woman-girl-boy-2.png",
+    "family-woman-girl-girl-1.png",
+    "family-woman-girl-girl-2.png",
+    "family-woman-woman-boy-1.png",
+    "family-woman-woman-boy-2.png",
+    "family-woman-woman-boy-boy-1.png",
+    "family-woman-woman-boy-boy-2.png",
+    "family-woman-woman-girl-1.png",
+    "family-woman-woman-girl-2.png",
+    "family-woman-woman-girl-boy-1.png",
+    "family-woman-woman-girl-boy-2.png",
+    "family-woman-woman-girl-girl-1.png",
+    "family-woman-woman-girl-girl-2.png",
+    "fearful-face.png",
+    "flexed-biceps-1.png",
+    "flexed-biceps-2.png",
+    "flushed-face.png",
+    "folded-hands-1.png",
+    "folded-hands-2.png",
+    "frowning-face.png",
+    "gesturing-ok-1.png",
+    "ghost.png",
+    "girl-1.png",
+    "girl-2.png",
+    "girl-3.png",
+    "glasses-1.png",
+    "glasses-2.png",
+    "graduation-cap.png",
+    "grimacing-face.png",
+    "grinning-cat-face-with-smiling-eyes.png",
+    "grinning-cat-face.png",
+    "grinning-face-with-smiling-eyes.png",
+    "grinning-face-with-sweat.png",
+    "grinning-face.png",
+    "grinning-squinting-face.png",
+    "guard-1.png",
+    "guard-2.png",
+    "hand-with-fingers-splayed-1.png",
+    "hand-with-fingers-splayed-2.png",
+    "handbag.png",
+    "high-heeled-shoe.png",
+    "hushed-face-1.png",
+    "hushed-face-2.png",
+    "index-pointing-up-1.png",
+    "index-pointing-up-2.png",
+    "jeans.png",
+    "kimono.png",
+    "kiss-man-man-1.png",
+    "kiss-man-man-2.png",
+    "kiss-woman-man-1.png",
+    "kiss-woman-man-2.png",
+    "kiss-woman-woman-1.png",
+    "kiss-woman-woman-2.png",
+    "kissing-cat-face.png",
+    "kissing-face-with-closed-eyes.png",
+    "kissing-face-with-smiling-eyes.png",
+    "kissing-face.png",
+    "lipstick.png",
+    "loudly-crying-face.png",
+    "lying-face.png",
+    "man-1.png",
+    "man-2.png",
+    "man-and-woman-holding-hands-1.png",
+    "man-and-woman-holding-hands-2.png",
+    "man-artist-1.png",
+    "man-artist-2.png",
+    "man-astronaut-1.png",
+    "man-astronaut-2.png",
+    "man-bowing-1.png",
+    "man-bowing-2.png",
+    "man-cook-1.png",
+    "man-cook-2.png",
+    "man-dancing-1.png",
+    "man-dancing-2.png",
+    "man-facepalming-1.png",
+    "man-facepalming-2.png",
+    "man-factory-worker-1.png",
+    "man-factory-worker-2.png",
+    "man-farmer-1.png",
+    "man-farmer-2.png",
+    "man-firefighter-1.png",
+    "man-firefighter-2.png",
+    "man-frowning-1.png",
+    "man-frowning-2.png",
+    "man-gesturing-no-1.png",
+    "man-gesturing-no-2.png",
+    "man-gesturing-ok-1.png",
+    "man-gesturing-ok-2.png",
+    "man-getting-haircut-1.png",
+    "man-getting-haircut-2.png",
+    "man-getting-massage-1.png",
+    "man-getting-massage-2.png",
+    "man-health-worker-1.png",
+    "man-health-worker-2.png",
+    "man-in-suit-levitating-1.png",
+    "man-in-suit-levitating-2.png",
+    "man-in-tuxedo-1.png",
+    "man-in-tuxedo-2.png",
+    "man-judge-1.png",
+    "man-judge-2.png",
+    "man-mechanic-1.png",
+    "man-mechanic-2.png",
+    "man-office-worker-1.png",
+    "man-office-worker-2.png",
+    "man-pilot-1.png",
+    "man-pilot-2.png",
+    "man-police-officer-1.png",
+    "man-police-officer-2.png",
+    "man-pouting-1.png",
+    "man-pouting-2.png",
+    "man-raising-hand-1.png",
+    "man-raising-hand-2.png",
+    "man-running-1.png",
+    "man-running-2.png",
+    "man-scientist-1.png",
+    "man-scientist-2.png",
+    "man-shrugging-1.png",
+    "man-shrugging-2.png",
+    "man-singer-1.png",
+    "man-singer-2.png",
+    "man-student-1.png",
+    "man-student-2.png",
+    "man-technologist-1.png",
+    "man-technologist-2.png",
+    "man-tipping-hand-1.png",
+    "man-tipping-hand-2.png",
+    "man-walking-1.png",
+    "man-walking-2.png",
+    "man-with-chinese-cap-1.png",
+    "man-with-chinese-cap-2.png",
+    "mans-shoe.png",
+    "men-with-bunny-ears-1.png",
+    "men-with-bunny-ears-2.png",
+    "money-mouth-face-1.png",
+    "money-mouth-face-2.png",
+    "mouth.png",
+    "nail-polish-1.png",
+    "nail-polish-2.png",
+    "nauseated-face-1.png",
+    "nauseated-face-2.png",
+    "necktie.png",
+    "nerd-face.png",
+    "neutral-face.png",
+    "ok-hand-1.png",
+    "ok-hand-2.png",
+    "old-man-1.png",
+    "old-man-2.png",
+    "old-woman-1.png",
+    "old-woman-2.png",
+    "oncoming-fist-1.png",
+    "oncoming-fist-2.png",
+    "pensive-face.png",
+    "persevering-face.png",
+    "person-wearing-turban-1.png",
+    "person-wearing-turban-2.png",
+    "pile-of-poo.png",
+    "pouting-cat-face.png",
+    "pouting-face.png",
+    "pregnant-woman-1.png",
+    "pregnant-woman-2.png",
+    "prince-1.png",
+    "prince-2.png",
+    "princess-1.png",
+    "princess-2.png",
+    "purse.png",
+    "raised-fist-1.png",
+    "raised-fist-2.png",
+    "raised-hand-1.png",
+    "raised-hand-2.png",
+    "raising-hands-1.png",
+    "raising-hands-2.png",
+    "relieved-face-1.png",
+    "relieved-face-2.png",
+    "ring-1.png",
+    "ring-2.png",
+    "robot-face-1.png",
+    "robot-face-2.png",
+    "robot-face-3.png",
+    "rolling-on-the-floor-laughing-1.png",
+    "rolling-on-the-floor-laughing-2.png",
+    "running-shoe.png",
+    "sad-but-relieved-face.png",
+    "santa-claus-1.png",
+    "santa-claus-2.png",
+    "school-backpack.png",
+    "selfie-1.png",
+    "selfie-2.png",
+    "shushing-face.png",
+    "sign-of-the-horns-1.png",
+    "sign-of-the-horns-2.png",
+    "skull.png",
+    "sleeping-face.png",
+    "sleepy-face.png",
+    "slightly-smiling-face.png",
+    "smiling-cat-face-with-heart-eyes.png",
+    "smiling-face-with-halo.png",
+    "smiling-face-with-heart-eyes.png",
+    "smiling-face-with-horns.png",
+    "smiling-face-with-smiling-eyes.png",
+    "smiling-face-with-sunglasses.png",
+    "smirking-face.png",
+    "sneezing-face.png",
+    "speaking-head.png",
+    "squinting-face-with-tongue.png",
+    "star-struck-1.png",
+    "star-struck-2.png",
+    "sunglasses.png",
+    "t-shirt.png",
+    "thinking-face.png",
+    "thumbs-down-1.png",
+    "thumbs-down-2.png",
+    "thumbs-up-1.png",
+    "thumbs-up-2.png",
+    "tired-face.png",
+    "tongue.png",
+    "two-men-holding-hands-1.png",
+    "two-men-holding-hands-2.png",
+    "two-women-holding-hands-1.png",
+    "two-women-holding-hands-2.png",
+    "umbrella.png",
+    "unamused-face.png",
+    "upside-down-face.png",
+    "victory-hand-1.png",
+    "victory-hand-2.png",
+    "vulcan-salute-1.png",
+    "vulcan-salute-2.png",
+    "waving-hand-1.png",
+    "waving-hand-2.png",
+    "weary-cat-face.png",
+    "weary-face-1.png",
+    "weary-face-2.png",
+    "winking-face-with-tongue.png",
+    "winking-face.png",
+    "woman-1.png",
+    "woman-2.png",
+    "woman-artist-1.png",
+    "woman-artist-2.png",
+    "woman-astronaut-1.png",
+    "woman-astronaut-2.png",
+    "woman-bowing-1.png",
+    "woman-bowing-2.png",
+    "woman-cook-1.png",
+    "woman-cook-2.png",
+    "woman-dancing-1.png",
+    "woman-dancing-2.png",
+    "woman-facepalming-1.png",
+    "woman-facepalming-2.png",
+    "woman-factory-worker-1.png",
+    "woman-factory-worker-2.png",
+    "woman-farmer-1.png",
+    "woman-farmer-2.png",
+    "woman-firefighter-1.png",
+    "woman-firefighter-2.png",
+    "woman-frowning-1.png",
+    "woman-frowning-2.png",
+    "woman-gesturing-no-1.png",
+    "woman-gesturing-no-2.png",
+    "woman-gesturing-ok-2.png",
+    "woman-getting-haircut-1.png",
+    "woman-getting-haircut-2.png",
+    "woman-getting-massage-1.png",
+    "woman-getting-massage-2.png",
+    "woman-health-worker-1.png",
+    "woman-health-worker-2.png",
+    "woman-judge-1.png",
+    "woman-judge-2.png",
+    "woman-mechanic-1.png",
+    "woman-mechanic-2.png",
+    "woman-office-worker-1.png",
+    "woman-office-worker-2.png",
+    "woman-pilot-1.png",
+    "woman-pilot-2.png",
+    "woman-police-officer-1.png",
+    "woman-police-officer-2.png",
+    "woman-pouting-1.png",
+    "woman-pouting-2.png",
+    "woman-raising-hand-1.png",
+    "woman-raising-hand-2.png",
+    "woman-running-1.png",
+    "woman-running-2.png",
+    "woman-scientist-1.png",
+    "woman-scientist-2.png",
+    "woman-shrugging-1.png",
+    "woman-shrugging-2.png",
+    "woman-singer-1.png",
+    "woman-singer-2.png",
+    "woman-student-1.png",
+    "woman-student-2.png",
+    "woman-technologist-1.png",
+    "woman-technologist-2.png",
+    "woman-tipping-hand-1.png",
+    "woman-tipping-hand-2.png",
+    "woman-walking-1.png",
+    "woman-walking-2.png",
+    "womans-boot.png",
+    "womans-hat.png",
+    "womans-sandal.png",
+    "women-with-bunny-ears-1.png",
+    "women-with-bunny-ears-2.png",
+    "worried-face.png",
+    "writing-hand-1.png",
+    "writing-hand-2.png",
+    "zipper-mouth-face.png"]

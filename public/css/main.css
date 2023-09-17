@@ -10,8 +10,8 @@
 
 :root {
     --bg-color: #fff;  
-    --dark-color: #333;
-    --med-color: #888;
+    --dark-color: #1f1f1f;
+    --med-color: #464646;
     --light-color: #ACACBE;
     --selected-bg:  rgb(67, 64, 64, .5);
     --cbig: 50px;
@@ -26,6 +26,7 @@
     box-sizing: border-box;
     text-rendering: geometricPrecision;
     user-select: none;
+    color: white;
 }
 
 .black-text {
@@ -35,7 +36,9 @@
 .padding-small {
     padding: 4px;
 }
-
+.big-icon {
+    font-size: 24px;
+}
 html {
 }
 
@@ -43,6 +46,11 @@ body {
 }
 
 #root {
+}
+
+.workspace .col1, .workspace  .col2 {
+    width: 50%;
+    background-color: var(--dark-color);
 }
 
 #logo {
@@ -96,22 +104,20 @@ body {
 }
 
 #main-tabs .tab.selected {
-    padding: 6px 180px 4px 12px;
-    background: var(--bg-color);
+    background-color: var(--med-color);
+    border-radius: 4px;
 }
 
 #main-tabs .tab.selected .title {
 }
 
 .workspace {
-    background: var(--bg-color);
     padding-top: 12px;
 }
 
 #picker {
-    width: 282px;
-    padding: 4px;
 }
+#picker .col1 { width: 30%; }
 
 .picker-toolbar {
     display: flex;
@@ -122,7 +128,6 @@ body {
     left: 182px;
     width: 70px;
     height: 0;
-    /* background-color: #f00; */
 }
 
 .picker-toolbar .title {
@@ -133,18 +138,21 @@ body {
     font-weight: 100;
     letter-spacing: -1.8px;
 }
-
+.picker-list {
+    max-height: 150px;
+    overflow-y: scroll;
+}
 .picker-cell {
     width: 100%;
-    padding: 12px;
+    padding: 4px 4px 4px 12px;
     display: flex;
     flex-direction: row;
     align-items: center;
-    margin: 0 0 8px 0;
+    margin: 0 0 4px 0;
 }
 
 .picker-cell:hover {
-    background: #eee;
+    background: var(--med-color);
 }
 
 .picker-cell-min {
@@ -153,9 +161,11 @@ body {
 }
 
 .icon {
-    width: 32px;
-    height: 32px;
-    margin: 0 16px 0 0;
+    width: 24px;
+    height: 24px;
+}
+.icon img {
+    width: 24px;
 }
 
 .icon.selected {
@@ -242,7 +252,6 @@ textarea {
 }
 
 textarea {
-    height: 100px;
 }
 
 .colors {
@@ -254,14 +263,33 @@ textarea {
 .color-choice {
     width: 26px;
     height: 26px;
-    background-color: white;
     margin: 0 10px 10px 0;
-    border: 3px solid var(--bg-color);
 }
 
 .color-choice.selected {
-    border: 3px solid #333;
+    border: 3px solid white;
 }
+
+
+
+.icons-picker {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: var(--dark-color);
+}
+
+.icon-choice {
+    width: 26px;
+    height: 26px;
+    margin: 0 10px 10px 0;
+}
+
+.icon-choice.selected {
+    border: 3px solid white;
+}
+
+
 
 .editor-props {
     position: absolute;
@@ -434,12 +462,11 @@ flex-direction: column;
 }
 
 
-button.green {
+button {
     border: 0;
-    background-color: #068447;
+    background-color: var(--dark-color);
     color: white;
     padding: 3px 10px 3px 10px;
-    visibility: hidden;
 }
 
 #framework_container {

@@ -219,60 +219,60 @@ export class DbItemList extends Component {
         this.draw();
     }
 
-    getSelected() {
-        var c = [];
-        this.children.forEach((item, index) => {
-            if (item.toggle && item.toggle.value) {
-                c.push(item.value);
-            }
-        });
-        return c;
-    }
+    // getSelected() {
+    //     var c = [];
+    //     this.children.forEach((item, index) => {
+    //         if (item.toggle && item.toggle.value) {
+    //             c.push(item.value);
+    //         }
+    //     });
+    //     return c;
+    // }
 
-    selectable(b) {
-        this.children.forEach((item, index) => {
-            item.selectable(b);
-        });
-    }
+    // selectable(b) {
+    //     this.children.forEach((item, index) => {
+    //         item.selectable(b);
+    //     });
+    // }
 
-    draggable(b) {
-        this.children.forEach((item, index) => {
-            item.draggable(b);
-        });
-    }
+    // draggable(b) {
+    //     this.children.forEach((item, index) => {
+    //         item.draggable(b);
+    //     });
+    // }
 }
 
 
 
 
-export class Toggle extends Component {
-    constructor(parent) {
-        super({ parent: parent.el, class: 'toggle-component' }, parent);
-        this.value = false;
-        this.draw();
-        this.redraw();
-    }
-    toggle() {
-        this.value = !this.value;
-        this.redraw();
-    }
-    draw() {
-        this.selectEl = $$({ parent: this.el, class: 'container' });
-        this.selectedEl = $$({ parent: this.el, class: 'signifier' });
-        var self = this;
-        this.selectEl.addEventListener('click', () => {
-            self.toggle();
-            self.emit('change', self.value);
-        });
-        this.selectedEl.addEventListener('click', () => {
-            self.toggle();
-            self.emit('change', self.value);
-        });
-    }
-    redraw() {
-        this.selectedEl.style.visibility = this.value ? 'visible' : 'hidden';
-    }
-}
+// export class Toggle extends Component {
+//     constructor(parent) {
+//         super({ parent: parent.el, class: 'toggle-component' }, parent);
+//         this.value = false;
+//         this.draw();
+//         this.redraw();
+//     }
+//     toggle() {
+//         this.value = !this.value;
+//         this.redraw();
+//     }
+//     draw() {
+//         this.selectEl = $$({ parent: this.el, class: 'container' });
+//         this.selectedEl = $$({ parent: this.el, class: 'signifier' });
+//         var self = this;
+//         this.selectEl.addEventListener('click', () => {
+//             self.toggle();
+//             self.emit('change', self.value);
+//         });
+//         this.selectedEl.addEventListener('click', () => {
+//             self.toggle();
+//             self.emit('change', self.value);
+//         });
+//     }
+//     redraw() {
+//         this.selectedEl.style.visibility = this.value ? 'visible' : 'hidden';
+//     }
+// }
 
 
 export class Selected extends Component {
