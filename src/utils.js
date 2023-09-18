@@ -235,7 +235,6 @@ export class DbItemList extends Component {
             s += b +" ";
             if (b) c++;
         });
-        console.log(c+" "+s)
     }
 
 }

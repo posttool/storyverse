@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { ICON_BASEPATH } from './icons';
-import {Component} from './utils';
+import { Component } from './utils';
 
 class MPoint {
     constructor(initValue, speed = .1) {
@@ -19,7 +19,7 @@ export const MODE_SELECTING = 1;
 
 export class Timeline extends Component {
     constructor() {
-        super({parent: document.body})
+        super({ parent: document.body })
         this.cameraY = new MPoint(2, .002);
         this.cameraLookAt = new THREE.Vector3(0, 0, -50);
         this.timeZ = new MPoint(0, .4);
@@ -57,7 +57,7 @@ export class Timeline extends Component {
     setupRenderer() {
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
-        // renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
         renderer.setAnimationLoop(animation);
         renderer.outputColorSpace = THREE.SRGBColorSpace;
 
@@ -107,7 +107,7 @@ export class Timeline extends Component {
                 i.object.parent.parent.hilight(false);
             });
         }
-        this.disc.visible = false;
+
         this.lane = null;
         this.frame = null;
 
@@ -124,18 +124,8 @@ export class Timeline extends Component {
                     this.lane = oo;
                 }
             });
-
-            this.lastIntersections = intersects;
-
-            if (this.mode == MODE_PLACING && this.data && this.lane && this.frame) {
-                this.disc.set(this.lane.color, this.data.icon);
-                this.disc.position.set(this.lane.position.x, -4.5, this.frame.position.z - this.frameSize +  this.timeZ.destination * this.frameSize);
-                this.disc.cylinder.material.opacity = .5;
-                if (this.disc.sprite)
-                    this.disc.sprite.material.opacity = .7;
-                this.disc.visible = true;
-            }
         }
+        this.lastIntersections = intersects;
 
     }
 
@@ -144,6 +134,20 @@ export class Timeline extends Component {
         this.camera.position.y = this.cameraY.next();
         this.camera.lookAt(this.cameraLookAt);
         this.frames.position.z = this.timeZ.next() * this.frameSize;
+
+        if (this.mode == MODE_PLACING && 
+            this.data && this.lane && this.frame && 
+            inObjArrayWithId(this.frame.getByFortune(this.lane.fortune), this.data) == -1) {
+                this.disc.set(this.lane.color, this.data.icon);
+                this.disc.position.set(this.lane.position.x, -4, 
+                    this.frame.position.z - (this.frameSize/2) + this.timeZ.destination * this.frameSize );
+                this.disc.cylinder.material.opacity = .5;
+                if (this.disc.sprite)
+                    this.disc.sprite.material.opacity = .7;
+                this.disc.visible = true;
+        } else {
+            this.disc.visible = false;
+        }
     }
 
     draw() {
@@ -169,22 +173,31 @@ export class Timeline extends Component {
             this.frames.add(f);
             this.rollovers.push(f.rollover);
         }
+
+        this.curves = new THREE.Group();
+        this.scene.add(this.curves);
     }
 
-    renderFortuneCurves(){
-        var vectors = [];
-        for (var i=0; i<this.frames.children.length; i++) {
-            //getWorldPosition()
-            vectors.push(new THREE.Vector2( -10, 0 ))
+    renderFortuneCurves() {
+        var uniqueChars = this.getUniqueCharacters();
+        for (var j = 0; j < uniqueChars.length; j++) {
+            var discs = this.getDiscsByCharacter(uniqueChars[j]);
+            console.log(uniqueChars[j])
+            console.log(discs)
+            var vectors = [];
+            for (var i = 0; i < discs.length; i++) {
+                console.log(i)
+                console.log(discs[i].getWorldPosition())
+                vectors.push(discs[i].getWorldPosition());//new THREE.Vector2(-10, 0))
+            }
+            // Create a sine-like wave
+            const curve = new THREE.SplineCurve(vectors);
+            const points = curve.getPoints(50);
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+            // Create the final object to add to the scene
+            const splineObject = new THREE.Line(geometry, material);
         }
-        // Create a sine-like wave
-        const curve = new THREE.SplineCurve(vectors );
-        const points = curve.getPoints( 50 );
-        const geometry = new THREE.BufferGeometry().setFromPoints( points );
-        const material = new THREE.LineBasicMaterial( { color: 0xff0000 } );
-        // Create the final object to add to the scene
-        const splineObject = new THREE.Line( geometry, material );
-
     }
 
     previous() {
@@ -197,13 +210,26 @@ export class Timeline extends Component {
 
     //returns the unique characters by looking at all the frames
     getUniqueCharacters() {
-         
+        var map = {};
+        for (var i = 0; i < this.frames.children.length; i++) {
+            var ids = this.frames.children[i].getIds();
+            for (var j = 0; j < ids.length; j++) {
+                map[ids[j]] = true;
+            }
+        }
+        return Object.keys(map);
     }
 
     //returns a list of a single character through frames.
-    getCharacterFrames(c) {
-
+    getDiscsByCharacter(id) {
+        var discs = [];
+        for (var i = 0; i < this.frames.children.length; i++) {
+            discs.push( this.frames.children[i].getDisc(id));
+        }
+        return [];
     }
+
+   
 }
 
 
@@ -260,7 +286,7 @@ class Lane extends UX3D {
         this.width = w;
         this.height = h;
         this.color = c;
-        this.value = [];
+        this.emoji = e;
         this.draw();
     }
 
@@ -268,8 +294,7 @@ class Lane extends UX3D {
         this.box = new BoxWithOutline(this.width, this.height, this.color);
         this.add(this.box.object);
         this.rollover = this.box.rollover;
-        // const disc = new Disc(0x111111, 'img/smiley-people/alien.png');
-        // this.add(disc);
+        this.sprite = getSprite(this.emoji);
     }
 
     hilight(b) {
@@ -282,7 +307,7 @@ class Frame extends UX3D {
         super();
         this.width = w;
         this.height = h;
-        this.value = [];//{data: {id: uuid, icon: path, ...}, fortune: int}
+        this.value = [];//{data: {id: uuid, ...}, fortune: int}
         this.draw();
     }
 
@@ -298,7 +323,8 @@ class Frame extends UX3D {
         this.clear(this.g);
         this.value.forEach((info, index) => {
             var d = new Disc(getColor(info.fortune), info.data.icon);
-            d.position.set(info.fortune * 5 - 10, .1, -this.height + index *5);
+            d.userData = info.data.id;
+            d.position.set(info.fortune * 5 - 10, .1, -this.height + index * 5);
             this.g.add(d);
         });
     }
@@ -320,22 +346,40 @@ class Frame extends UX3D {
 
     getByFortune(fortune) {
         var list = [];
-        for (var i=0; i<this.value.length; i++) {
+        for (var i = 0; i < this.value.length; i++) {
             if (this.value[i].fortune == fortune) {
-                list.push(this.value[i]);
+                list.push(this.value[i].data);
             }
         }
         return list;
     }
 
-    getById(id){
-        for (var i=0; i<this.value.length; i++) {
+    getById(id) {
+        for (var i = 0; i < this.value.length; i++) {
             if (this.value[i].data.id == id) {
                 return this.value[i];
             }
         }
         return null;
     }
+
+    getIds() {
+        var map = {};
+        for (var i = 0; i < this.value.length; i++) {
+            map[this.value[i].data.id] = true;
+        }
+        return Object.keys(map);
+    }
+
+    getDisc(id){
+        for (var i = 0; i < this.g.children.length; i++) {
+            if (this.g.children[i].userData == id) {
+                return this.g.children[i];
+            }
+        }
+        return null;
+    }
+
 
 }
 
@@ -413,6 +457,15 @@ function getEmoji(fortune) {
     return EMOJIS[fortune];
 }
 
+
+function inObjArrayWithId(array, obj) {
+    for (var i=0; i<array.length; i++) {
+        if (array[i].id == obj.id) {
+            return i;
+        }
+    }
+    return -1;
+}
 /*
 
 
