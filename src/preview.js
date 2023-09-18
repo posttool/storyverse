@@ -2,8 +2,9 @@ import { $, $$mi, div, Component } from './utils.js';
 import { GetVoiceList, TextToSpeech } from './tts.js';
 
 export class Preview extends Component {
-    constructor(parent) {
+    constructor(parent, timeline) {
         super({ parent: $('preview'), class: 'preview' });
+        this.timeline = timeline;
         // GetVoiceList(o => {
         //     console.log(">voices");
         //     console.log(o)
@@ -27,9 +28,10 @@ export class Preview extends Component {
         var play = $$mi({ parent: this.controlEl, text: 'play_arrow' });
         var ff = $$mi({ parent: this.controlEl, text: 'fast_forward' });
 
-        rr.addEventListener('click', (e) => { this.emit('back'); });
+        var self = this;
+        rr.addEventListener('click', (e) => { this.timeline.previous(); });
         play.addEventListener('click', (e) => { this.emit('play') });
-        ff.addEventListener('click', (e) => { this.emit('forward') });
+        ff.addEventListener('click', (e) => { this.timeline.next(); });
     }
 
 

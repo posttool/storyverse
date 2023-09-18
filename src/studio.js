@@ -1,13 +1,15 @@
 import { $, $$, Component, Selected } from './utils.js';
-import { CharacterAttributes } from './attributes.js';
+import { StoryAttributes } from './attributes.js';
 import { Picker } from './picker.js';
 import { Preview } from './preview.js';
 import { Account } from './account.js';
-import { Timeline } from './timeline.js';
+import { Timeline, MODE_PLACING, MODE_SELECTING } from './timeline.js';
 
 const PICKER = 'Story Cast';
+const GENRE = 'Story Genre';
 const EDITOR = 'Cast Attributes';
-
+const DRAFT = 'Story Draft';
+const FORMATS = 'Export and Formats';
 
 export class Studio extends Component {
     constructor(services) {
@@ -20,21 +22,33 @@ export class Studio extends Component {
             this.visible(false, $("not-logged-in"));
             $("main-tabs").innerHTML = '';
             this.mainTabs = new MainTabs(this);
-            this.mainTabs.addListener('change', value => {
-                this.redraw();
-            });
             this.mainTabs.value = PICKER; // TODO save/restore state
             this.mainTabs.redraw();
             this.picker = new Picker(this);
-            this.picker.toolbar(true);
-            this.picker.load();
-            this.picker.addListener('select', e=>{
-                this.timeline.data = e;
-            })
             this.timeline = new Timeline();
-            this.editor = new CharacterAttributes(this);
+            this.picker.addListener('select', e => {
+                this.timeline.data = e;
+            });
+            this.picker.load();
+
+            this.editor = new StoryAttributes(this, this.timeline);
+            this.timeline.addListener('changeFrame', e=>{
+
+            });
+            this.timeline.addListener('select', e=>{
+                this.editor.setData(e);
+            });
+            this.timeline.addListener('place', e=>{
+                //todo
+            });
             this.editor.visible(false);
-            this.player = new Preview(this);
+
+            this.player = new Preview(this, this.timeline);
+
+            this.mainTabs.addListener('change', value => {
+                this.redraw();
+            });
+
         });
         this.account.addListener('logout', e => {
             this.visible(true, $("not-logged-in"));
@@ -50,15 +64,17 @@ export class Studio extends Component {
             case PICKER:
                 this.picker.visible(true);
                 this.editor.visible(false);
+                this.timeline.mode = MODE_PLACING;
                 break;
             case EDITOR:
-                this.picker.visible(true);
+                this.picker.visible(false);
                 this.editor.visible(true);
+                this.timeline.mode = MODE_SELECTING;
                 break;
         }
     }
 
-  
+
 
 }
 
@@ -67,7 +83,7 @@ class MainTabs extends Selected {
     constructor() {
         super(
             { parent: $('main-tabs'), class: 'row' },
-            [PICKER, EDITOR],
+            [PICKER, GENRE, EDITOR, DRAFT, FORMATS ],
             TabCell
         );
     }

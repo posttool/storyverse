@@ -175,6 +175,7 @@ export class DbItemList extends Component {
         this.children = [];
         this.renderer = cell_class;
     }
+
     draw() {
         this.el.innerHTML = '';
         this.value.forEach((v, index) => {
@@ -187,8 +188,8 @@ export class DbItemList extends Component {
             })
             this.children.push(item);
         });
-
     }
+
     getValueById(id) {
         return this.value[this.getIndexById(id)];
     }
@@ -219,27 +220,24 @@ export class DbItemList extends Component {
         this.draw();
     }
 
-    // getSelected() {
-    //     var c = [];
-    //     this.children.forEach((item, index) => {
-    //         if (item.toggle && item.toggle.value) {
-    //             c.push(item.value);
-    //         }
-    //     });
-    //     return c;
-    // }
+    select(doc) {
+        if (this.children.length == 0) {
+            return;
+        }
+        if (doc == null || doc.id == null) {
+            doc = this.children[0].value;
+        }
+        var s = '';
+        var c = 0;
+        this.children.forEach(child => {
+            let b = (child.value.id == doc.id);
+            child.select(b);
+            s += b +" ";
+            if (b) c++;
+        });
+        console.log(c+" "+s)
+    }
 
-    // selectable(b) {
-    //     this.children.forEach((item, index) => {
-    //         item.selectable(b);
-    //     });
-    // }
-
-    // draggable(b) {
-    //     this.children.forEach((item, index) => {
-    //         item.draggable(b);
-    //     });
-    // }
 }
 
 
