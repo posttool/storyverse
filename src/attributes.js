@@ -11,7 +11,16 @@ export class StoryAttributes extends Component {
         this.textEl = div(this.el);
     }
 
-    setData(d){
-        this.textEl.innerText = JSON.stringify(d);
+    redraw() {
+        console.log(this.timeline.getUniqueCharacters());
     }
+
+
+    visible(b) {
+        super.visible(b);
+        if (b) {
+            this.redraw();
+        }
+    }
+
 }

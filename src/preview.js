@@ -2,9 +2,9 @@ import { $, $$mi, div, Component } from './utils.js';
 import { GetVoiceList, TextToSpeech } from './tts.js';
 
 export class Preview extends Component {
-    constructor(parent, timeline) {
+    constructor(parent) {
         super({ parent: $('preview'), class: 'preview' });
-        this.timeline = timeline;
+        this.frame = 0;
         // GetVoiceList(o => {
         //     console.log(">voices");
         //     console.log(o)
@@ -18,8 +18,6 @@ export class Preview extends Component {
         TextToSpeech(text, oneOf(this.voices).voice_id)
     }
 
-
-
     draw() {
         this.toolbarEl = div(this.el);
         this.text = div(this.el);
@@ -27,11 +25,28 @@ export class Preview extends Component {
         var rr = $$mi({ parent: this.controlEl, text: 'fast_rewind' });
         var play = $$mi({ parent: this.controlEl, text: 'play_arrow' });
         var ff = $$mi({ parent: this.controlEl, text: 'fast_forward' });
+        this.frameEl = div(this.controlEl, '', '0');
 
-        var self = this;
-        rr.addEventListener('click', (e) => { this.timeline.previous(); });
-        play.addEventListener('click', (e) => { this.emit('play') });
-        ff.addEventListener('click', (e) => { this.timeline.next(); });
+        rr.addEventListener('click', (e) => { 
+            this.emit('previous');
+        });
+        play.addEventListener('click', (e) => { 
+            this.emit('play') 
+        });
+        ff.addEventListener('click', (e) => { 
+            this.emit('next');
+        });
+        document.addEventListener('keyup', e=>{
+            if (e.key == 'ArrowLeft'|| e.key=='ArrowDown') {
+                this.emit('previous');
+            } else if (e.key == 'ArrowRight' || e.key=='ArrowUp') {
+                this.emit('next');
+            }
+        });
+    }
+
+    update(){
+        this.frameEl.innerText = "Frame "+(this.frame+1);
     }
 
 

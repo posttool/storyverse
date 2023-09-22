@@ -32,21 +32,35 @@ export class Studio extends Component {
             this.picker.load();
 
             this.editor = new StoryAttributes(this, this.timeline);
-            this.timeline.addListener('changeFrame', e=>{
+            this.timeline.addListener('changeFrame', e => {
 
             });
-            this.timeline.addListener('select', e=>{
-                this.editor.setData(e);
+            this.timeline.addListener('select', e => {
+                console.log(e);
+                // this.editor.setData(e);
             });
-            this.timeline.addListener('place', e=>{
+            this.timeline.addListener('place', e => {
                 //todo
             });
             this.editor.visible(false);
 
-            this.player = new Preview(this, this.timeline);
+            this.player = new Preview(this);
+            this.player.addListener('previous', e => {
+                this.timeline.gotoFrame(this.timeline.timeZ.destination - 1);
+            });
+            this.player.addListener('next', e => {
+                this.timeline.gotoFrame(this.timeline.timeZ.destination + 1);
+            });
 
             this.mainTabs.addListener('change', value => {
                 this.redraw();
+            });
+
+            document.addEventListener('keyup', e => {
+                console.log(e.key)
+                if (e.key == 'Delete') {
+                    this.timeline.deleteSelection();
+                }
             });
 
         });
@@ -83,7 +97,7 @@ class MainTabs extends Selected {
     constructor() {
         super(
             { parent: $('main-tabs'), class: 'row' },
-            [PICKER, GENRE, EDITOR, DRAFT, FORMATS ],
+            [PICKER, GENRE, EDITOR, DRAFT, FORMATS],
             TabCell
         );
     }

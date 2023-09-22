@@ -28,7 +28,6 @@ export class Picker extends Component {
 
         this.objects.addListener('click', (index) => {
             this.showPickerForm(index);
-            this.objects.select(this.objects.value[index]);
         });
         this.add.addListener('click', e => {
             this.showPickerForm();
@@ -38,7 +37,6 @@ export class Picker extends Component {
     redraw() {
     }
 
-   
 
     load() {
         const c = collection(getFirestore(), 'noun');
@@ -51,9 +49,6 @@ export class Picker extends Component {
                 snapshot.docChanges().forEach(function (change) {
                     self.dataChangeHandler(change);
                 });
-                self.objects.select();
-                if (self.objects.value.length != 0)
-                    self.showPickerForm(0);    
                 self.redraw();
             }, function (e) {
                 console.error('snapshot error Picker.load');
@@ -64,14 +59,10 @@ export class Picker extends Component {
     dataChangeHandler(change) {
         if (change.type === 'removed') {
             this.objects.remove(change.doc.id);
-            this.objects.select();
-            if (this.objects.value.length != 0)
-                this.showPickerForm(0);
         } else {
             let doc = change.doc.data();
             doc.id = change.doc.id;
             this.objects.update(doc, 'name');
-            this.objects.select(doc);
             if (this.form)
                this.emit('select', this.form.value);
         }
@@ -80,14 +71,15 @@ export class Picker extends Component {
     showPickerForm(index) {
         this.formsEl.innerText = '';
         this.form = new PickerForm(this.formsEl, this.parent);
-        this.form.addListener('deleted', e => {
-            this.dataChangeHandler({ type: 'removed', doc: this.objects.value[index] });
+        this.form.addListener('update', e => {
+            this.objects.select(e);
         })
         if (index != null) {
             this.form.value = this.objects.value[index];
             this.emit('select', this.form.value);
         }
         this.form.redraw();
+        this.objects.select(this.form.value);
     }
 
 
@@ -162,16 +154,16 @@ export class PickerForm extends Component {
         // $$({ parent: $r3, class: 'form-label', text: 'Description' });
         this.descriptionEl = $$({ parent: $r3, el: 'textarea', class: 'form-textarea' });
 
-        var $r4 = $$({ parent: this.el, class: 'row' });
+        // var $r4 = $$({ parent: this.el, class: 'row' });
         // $$({ parent: $r4, class: 'form-label', text: 'Color' })
-        this.colors = new Colors($r4);
+        // this.colors = new Colors($r4);
 
         var $r5 = $$({ parent: this.el, class: 'row' });
         // $$({ parent: $r5, class: 'form-label', text: 'Icon' });
         this.icon = $$({ parent: $r5, el: 'img' });
         var chooseIcon = $$({ parent: $r5, text: 'Choose Icon', el: 'button' })
 
-        this.icons = new Icons(document.body);
+        this.icons = new Icons(this.el);
         this.icons.visible(false);
 
         chooseIcon.addEventListener('click', e => {
@@ -183,7 +175,7 @@ export class PickerForm extends Component {
         delEl.addEventListener('click', e => {
             this.el.style.opacity = .5;
             this.parent.services.Picker.Delete([this.value.id]).then(results => {
-                console.log('deleted');
+                this.el.innerText = '';
                 this.emit('deleted');
             });
         });
@@ -194,7 +186,7 @@ export class PickerForm extends Component {
 
         //
         // this.closeButton.addEventListener('click', e => { this.parent.remove(this); });
-        this.colors.addListener('change', this.setValueFromUi.bind(this));
+        // this.colors.addListener('change', this.setValueFromUi.bind(this));
         this.icons.addListener('change', this.setValueFromUi.bind(this));
         this.nameEl.addEventListener('keyup', this.setValueFromUi.bind(this));
         this.descriptionEl.addEventListener('keyup', this.setValueFromUi.bind(this));
@@ -211,7 +203,7 @@ export class PickerForm extends Component {
                     // type: this.typeEl.options[this.typeEl.selectedIndex].text,
                     name: this.nameEl.value,
                     description: this.descriptionEl.value,
-                    color: this.colors.value,
+                    // color: this.colors.value,
                     icon: this.icons.value
                 }
                 this.isSaving = true;
@@ -219,6 +211,7 @@ export class PickerForm extends Component {
                     this.value.id = results.data.id;
                     this.icons.visible(false);
                     this.redraw();
+                    this.emit('update', this.value);
                     this.isSaving = false;
                 });
             }
@@ -230,10 +223,12 @@ export class PickerForm extends Component {
             // this.typeEl.selectedOption = this.types.indexOf(this.value.type);
             this.nameEl.value = this.value.name;
             this.descriptionEl.textContent = this.value.description;
-            this.colors.value = this.value.color;
-            this.colors.redraw();
-            this.icons.value = this.value.icon;
-            this.icon.src = this.value.icon;
+            // this.colors.value = this.value.color;
+            // this.colors.redraw();
+            if (this.value.icon) {
+                this.icons.value = this.value.icon;
+                this.icon.src = this.value.icon;
+            }
             this.icons.redraw();
         }
     }

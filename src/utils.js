@@ -180,6 +180,8 @@ export class DbItemList extends Component {
         this.el.innerHTML = '';
         this.value.forEach((v, index) => {
             var item = new this.renderer(this, v);
+            if (v.id == this.selectedId)
+                item.select(true);
             item.addListener('change', (e) => {
                 this.emit('select');
             });
@@ -221,19 +223,14 @@ export class DbItemList extends Component {
     }
 
     select(doc) {
+        this.selectedId = doc ? doc.id : null;
         if (this.children.length == 0) {
             return;
         }
-        if (doc == null || doc.id == null) {
-            doc = this.children[0].value;
-        }
-        var s = '';
         var c = 0;
         this.children.forEach(child => {
-            let b = (child.value.id == doc.id);
+            let b = (child.value.id == this.selectedId);
             child.select(b);
-            s += b +" ";
-            if (b) c++;
         });
     }
 

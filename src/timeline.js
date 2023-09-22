@@ -13,6 +13,7 @@ class MPoint {
         return this.at;
     }
 }
+
 // init
 export const MODE_PLACING = 0;
 export const MODE_SELECTING = 1;
@@ -21,7 +22,8 @@ export class Timeline extends Component {
     constructor() {
         super({ parent: document.body })
         this.cameraY = new MPoint(2, .002);
-        this.cameraLookAt = new THREE.Vector3(0, 0, -50);
+        this.cameraY.destination = 11;
+        this.cameraLookAt = new THREE.Vector3(0, 0, -10);
         this.timeZ = new MPoint(0, .4);
         this.frameSize = 20;
 
@@ -30,7 +32,6 @@ export class Timeline extends Component {
         this.setupScene();
         this.draw();
         this.setupRenderer();
-        this.cameraY.destination = 7;
     }
 
     setupScene() {
@@ -38,7 +39,7 @@ export class Timeline extends Component {
         this.camera = new THREE.PerspectiveCamera(20, window.innerWidth / window.innerHeight, 10, 400);
         this.camera.position.z = 70;
         this.scene.add(this.camera);
-
+        // var dlight = new THREE.AmbientLight(0xffffff, 2);
         var dlight = new THREE.DirectionalLight(0xffffff, 10);
         dlight.position.set(0, 3, 90);
         this.scene.add(dlight);
@@ -74,17 +75,7 @@ export class Timeline extends Component {
             self.mouse.y = (e.clientY / window.innerHeight) * -2 + 1;
         }
         function onDocumentClick(e) {
-            if (self.mode == MODE_PLACING) {
-                self.getIntersections();
-                if (self.data && self.lane) {
-                    self.frame.addCharacter(self.data, self.lane.fortune);
-                    self.renderFortuneCurves();
-                }
-            } else {
-                // need emit :)
-                if (self.frame && self.lane)
-                    self.emit('select', self.frame.getByFortune(self.lane.fortune));
-            }
+            self.onClick();
         }
 
         renderer.domElement.style.position = "absolute";
@@ -95,6 +86,81 @@ export class Timeline extends Component {
         document.body.appendChild(renderer.domElement);
         document.addEventListener('mousemove', onDocumentMouseMove, false);
         document.addEventListener('click', onDocumentClick, false);
+    }
+
+    onClick() {
+        if (this.mode == MODE_PLACING) {
+            this.getIntersections();
+            if (this.data && this.frame && this.lane) {
+                this.frame.addCharacter(this.data, this.lane.fortune);
+                this.renderFortuneCurves();
+            } else if (this.data && this.frame && this.setting) {
+                this.frame.addSetting(this.data);
+            }
+            console.log('3')
+
+        } else {
+            if (this.frame && this.lane)
+                this.emit('select', {
+                    frame: this.frame.index,
+                    fortune: this.lane.fortune,
+                    characters: this.frame.getByFortune(this.lane.fortune)
+                });
+        }
+    }
+
+
+    draw() {
+        this.rollovers = [];
+
+        this.lanes = new THREE.Group();
+        this.scene.add(this.lanes);
+
+        for (let x = 0; x < 5; x++) {
+            let f = new Lane(x, 3, 250, COLORS[x], ICON_BASEPATH + EMOJIS[x])
+            f.position.set(x * 5 - 10, 0, 0);
+            this.lanes.add(f);
+            this.rollovers.push(f.rollover);
+        }
+
+        this.frames = new THREE.Group();
+        this.scene.add(this.frames);
+
+        for (let i = 0; i < 10; i++) {
+            let f = new Frame(i, 29, this.frameSize);
+            f.position.z = -i * this.frameSize;
+            f.position.y = .5;
+            this.frames.add(f);
+            this.rollovers.push(f.rollover);
+            this.rollovers.push(f.rolloverSetting);
+        }
+
+        this.curves = new THREE.Group();
+        this.scene.add(this.curves);
+    }
+
+    renderFortuneCurves() {
+        clearGroup(this.curves);
+
+        var uniqueChars = this.getUniqueCharacters();
+        for (var j = 0; j < uniqueChars.length; j++) {
+            var discs = this.getDiscsByCharacter(uniqueChars[j]);
+            if (discs.length < 2)
+                continue;
+            var vectors = [];
+            for (var i = 0; i < discs.length; i++) {
+                var target = new THREE.Vector3();
+                discs[i].getWorldPosition(target)
+                target.z -= this.timeZ.destination * this.frameSize
+                vectors.push(target);
+            }
+            const curve = new THREE.CatmullRomCurve3(vectors);
+            const points = curve.getPoints(50);
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const material = new THREE.LineBasicMaterial({ color: 0xffffff });
+            const splineObject = new THREE.Line(geometry, material);
+            this.curves.add(splineObject);
+        }
     }
 
     getIntersections() {
@@ -120,13 +186,48 @@ export class Timeline extends Component {
                 oo.hilight(true);
                 if (oo instanceof Frame) {
                     this.frame = oo;
+                    this.setting = (i.object.userData == 'setting');
                 } else if (oo instanceof Lane) {
                     this.lane = oo;
                 }
             });
         }
+
+        if (this.lastIntersections != intersects) {
+            this.redraw();
+        }
+
         this.lastIntersections = intersects;
 
+    }
+
+    redraw() {
+        if (this.mode == MODE_PLACING &&
+            this.data && this.lane && this.frame &&
+            inObjArrayWithId(this.frame.getByFortune(this.lane.fortune), this.data) == -1) {
+            this.disc.set(this.lane.color, this.data.icon);
+            this.disc.position.set(this.lane.position.x, 1,
+                this.frame.position.z - (this.frameSize / 2) + this.timeZ.destination * this.frameSize);
+            this.disc.cylinder.material.opacity = .5;
+            if (this.disc.sprite)
+                this.disc.sprite.material.opacity = .7;
+            this.disc.visible = true;
+        } else {
+            this.disc.visible = false;
+        }
+
+        if (this.mode == MODE_PLACING &&
+            this.data && this.frame && this.setting &&
+            this.frame.setting != this.data) {
+            this.disc.set(0, this.data.icon);
+            this.disc.position.set(this.frame.position.x + this.frame.width / 2,
+                this.frame.position.y,
+                this.frame.position.z + this.frame.height/2);
+            this.disc.cylinder.material.opacity = 0;
+            if (this.disc.sprite)
+                this.disc.sprite.material.opacity = .7;
+            this.disc.visible = true;
+        }
     }
 
     update(time) {
@@ -134,79 +235,14 @@ export class Timeline extends Component {
         this.camera.position.y = this.cameraY.next();
         this.camera.lookAt(this.cameraLookAt);
         this.frames.position.z = this.timeZ.next() * this.frameSize;
-
-        if (this.mode == MODE_PLACING && 
-            this.data && this.lane && this.frame && 
-            inObjArrayWithId(this.frame.getByFortune(this.lane.fortune), this.data) == -1) {
-                this.disc.set(this.lane.color, this.data.icon);
-                this.disc.position.set(this.lane.position.x, -4, 
-                    this.frame.position.z - (this.frameSize/2) + this.timeZ.destination * this.frameSize );
-                this.disc.cylinder.material.opacity = .5;
-                if (this.disc.sprite)
-                    this.disc.sprite.material.opacity = .7;
-                this.disc.visible = true;
-        } else {
-            this.disc.visible = false;
-        }
+        this.curves.position.z = this.frames.position.z;
     }
 
-    draw() {
-        this.rollovers = [];
 
-        this.lanes = new THREE.Group();
-        this.scene.add(this.lanes);
-
-        for (let x = 0; x < 5; x++) {
-            let f = new Lane(x, 3, 1000, COLORS[x], ICON_BASEPATH + EMOJIS[x])
-            f.position.set(x * 5 - 10, -5, 100);
-            this.lanes.add(f);
-            this.rollovers.push(f.rollover);
-        }
-
-        this.frames = new THREE.Group();
-        this.scene.add(this.frames);
-
-        for (let i = 0; i < 10; i++) {
-            let f = new Frame(29, this.frameSize);
-            f.position.z = -i * this.frameSize;
-            f.position.y = -4.5;
-            this.frames.add(f);
-            this.rollovers.push(f.rollover);
-        }
-
-        this.curves = new THREE.Group();
-        this.scene.add(this.curves);
+    gotoFrame(d) {
+        this.timeZ.destination = d;
     }
 
-    renderFortuneCurves() {
-        var uniqueChars = this.getUniqueCharacters();
-        for (var j = 0; j < uniqueChars.length; j++) {
-            var discs = this.getDiscsByCharacter(uniqueChars[j]);
-            console.log(uniqueChars[j])
-            console.log(discs)
-            var vectors = [];
-            for (var i = 0; i < discs.length; i++) {
-                console.log(i)
-                console.log(discs[i].getWorldPosition())
-                vectors.push(discs[i].getWorldPosition());//new THREE.Vector2(-10, 0))
-            }
-            // Create a sine-like wave
-            const curve = new THREE.SplineCurve(vectors);
-            const points = curve.getPoints(50);
-            const geometry = new THREE.BufferGeometry().setFromPoints(points);
-            const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
-            // Create the final object to add to the scene
-            const splineObject = new THREE.Line(geometry, material);
-        }
-    }
-
-    previous() {
-        this.timeZ.destination--;
-    }
-
-    next() {
-        this.timeZ.destination++;
-    }
 
     //returns the unique characters by looking at all the frames
     getUniqueCharacters() {
@@ -224,12 +260,14 @@ export class Timeline extends Component {
     getDiscsByCharacter(id) {
         var discs = [];
         for (var i = 0; i < this.frames.children.length; i++) {
-            discs.push( this.frames.children[i].getDisc(id));
+            var d = this.frames.children[i].getDisc(id);
+            if (d)
+                discs.push(d);
         }
-        return [];
+        return discs;
     }
 
-   
+
 }
 
 
@@ -239,14 +277,16 @@ class UX3D extends THREE.Group {
     }
 
     clear(g) {
-        var o = g ? g : this;
-        for (var i = o.children.length - 1; i >= 0; i--) {
-            let obj = o.children[i];
-            o.remove(obj);
-        }
+        clearGroup(g ? g : this);
     }
 }
 
+function clearGroup(o) {
+    for (var i = o.children.length - 1; i >= 0; i--) {
+        let obj = o.children[i];
+        o.remove(obj);
+    }
+}
 
 class Disc extends UX3D {
     constructor(color, emojiPath) {
@@ -259,7 +299,7 @@ class Disc extends UX3D {
             return;
         }
         this.clear();
-        if (color) {
+        if (color != null) {
             this.color = color;
             this.cylinder = new THREE.Mesh(
                 new THREE.CylinderGeometry(2, 2, .4, 32),
@@ -270,7 +310,6 @@ class Disc extends UX3D {
         if (emojiPath) {
             this.emojiPath = emojiPath;
             this.sprite = getSprite(emojiPath);
-            this.sprite.scale.set(2, 2, 1);
             this.sprite.position.set(0, 1.5, 0);
             this.add(this.sprite);
         }
@@ -292,9 +331,21 @@ class Lane extends UX3D {
 
     draw() {
         this.box = new BoxWithOutline(this.width, this.height, this.color);
-        this.add(this.box.object);
+        this.box.rotation.set(Math.PI * .5, 0, 0);
+        this.box.position.set(-this.width / 2, 0, -this.height);
+        this.add(this.box);
+
+        const texture = getTexture(this.emoji);
+        const plane = new THREE.Mesh(
+            new THREE.PlaneGeometry(3, 3),
+            new THREE.MeshLambertMaterial({ map: texture, side: THREE.DoubleSide, opacity: 1, transparent: true })
+        );
+
+        plane.rotation.set(-Math.PI * .5, 0, 0);
+        plane.position.set(0, .01, -40);
+        this.add(plane);
+
         this.rollover = this.box.rollover;
-        this.sprite = getSprite(this.emoji);
     }
 
     hilight(b) {
@@ -303,30 +354,51 @@ class Lane extends UX3D {
 }
 
 class Frame extends UX3D {
-    constructor(w, h) {
+    constructor(i, w, h) {
         super();
+        this.index = i;
         this.width = w;
         this.height = h;
-        this.value = [];//{data: {id: uuid, ...}, fortune: int}
+        this.characters = [];//{data: {id: uuid, ...}, fortune: int}
+        this.setting = null; //data
         this.draw();
     }
 
     draw() {
         this.box = new BoxWithOutline(this.width, this.height, 0xffffff);
-        this.add(this.box.object);
+        this.box.rotation.set(Math.PI * .5, 0, 0);
+        this.box.position.set(-this.width / 2, 0, -this.height);
+        this.add(this.box);
+        this.boxSetting = new BoxWithOutline(3, 3, 0xffffff);
+        this.boxSetting.position.set(this.width / 2 , -1.5, 0);
+        this.add(this.boxSetting);
+
         this.rollover = this.box.rollover;
-        this.g = new THREE.Group();
+        this.rolloverSetting = this.boxSetting.rollover;
+        this.rolloverSetting.userData = 'setting';
+        this.g = new THREE.Group(); // used to draw values
         this.add(this.g);
     }
 
-    redraw() {
+    redrawCharacters() {
         this.clear(this.g);
-        this.value.forEach((info, index) => {
+        this.characters.forEach((info, index) => {
             var d = new Disc(getColor(info.fortune), info.data.icon);
             d.userData = info.data.id;
-            d.position.set(info.fortune * 5 - 10, .1, -this.height + index * 5);
+            d.position.set(info.fortune * 5 - 10, .1, -index * 5);
             this.g.add(d);
         });
+    }
+
+    redrawSetting() {
+        if (this.setting) {
+            if (this.sprite) {
+                this.boxSetting.remove(this.sprite);
+            }
+            this.sprite = getSprite(this.setting.icon);
+            this.sprite.position.set(1.5,1.5,.1)
+            this.boxSetting.add(this.sprite);
+        }
     }
 
     hilight(b) {
@@ -339,25 +411,30 @@ class Frame extends UX3D {
             match.fortune = fortune;
             match.data.icon = data.icon;
         } else {
-            this.value.push({ data: data, fortune: fortune });
+            this.characters.push({ data: data, fortune: fortune });
         }
-        this.redraw();
+        this.redrawCharacters();
+    }
+
+    addSetting(data) {
+        this.setting = data;
+        this.redrawSetting();
     }
 
     getByFortune(fortune) {
         var list = [];
-        for (var i = 0; i < this.value.length; i++) {
-            if (this.value[i].fortune == fortune) {
-                list.push(this.value[i].data);
+        for (var i = 0; i < this.characters.length; i++) {
+            if (this.characters[i].fortune == fortune) {
+                list.push(this.characters[i].data);
             }
         }
         return list;
     }
 
     getById(id) {
-        for (var i = 0; i < this.value.length; i++) {
-            if (this.value[i].data.id == id) {
-                return this.value[i];
+        for (var i = 0; i < this.characters.length; i++) {
+            if (this.characters[i].data.id == id) {
+                return this.characters[i];
             }
         }
         return null;
@@ -365,13 +442,13 @@ class Frame extends UX3D {
 
     getIds() {
         var map = {};
-        for (var i = 0; i < this.value.length; i++) {
-            map[this.value[i].data.id] = true;
+        for (var i = 0; i < this.characters.length; i++) {
+            map[this.characters[i].data.id] = true;
         }
         return Object.keys(map);
     }
 
-    getDisc(id){
+    getDisc(id) {
         for (var i = 0; i < this.g.children.length; i++) {
             if (this.g.children[i].userData == id) {
                 return this.g.children[i];
@@ -384,8 +461,9 @@ class Frame extends UX3D {
 }
 
 
-class BoxWithOutline {
+class BoxWithOutline extends THREE.Group {
     constructor(w, h, c, e) {
+        super();
         const squareShape = getSquareShape(w, h);
 
         const plane = new THREE.Mesh(
@@ -398,15 +476,11 @@ class BoxWithOutline {
         let line2 = new THREE.Line(geometryPoints, new THREE.LineBasicMaterial({ color: c }));
         line2.position.x = .02;
 
-        const group = new THREE.Group();
-        group.add(plane);
-        group.add(line);
-        group.add(line2);
-        group.rotation.set(Math.PI * .5, 0, 0);
-        group.position.set(-w / 2, 0, -h);
+        this.add(plane);
+        this.add(line);
+        this.add(line2);
 
         this.rollover = plane;
-        this.object = group;
     }
 }
 
@@ -423,6 +497,7 @@ function getTexture(path, options) {
 function getSprite(path) {
     const texture = getTexture(path);
     const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture }));
+    sprite.scale.set(2, 2, 1);
     return sprite;
 }
 
@@ -459,7 +534,7 @@ function getEmoji(fortune) {
 
 
 function inObjArrayWithId(array, obj) {
-    for (var i=0; i<array.length; i++) {
+    for (var i = 0; i < array.length; i++) {
         if (array[i].id == obj.id) {
             return i;
         }

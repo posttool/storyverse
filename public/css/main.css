@@ -21,7 +21,7 @@
 }
 
 * {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Fredoka', sans-serif;
     font-size: 12px;
     box-sizing: border-box;
     text-rendering: geometricPrecision;
@@ -58,10 +58,9 @@ body {
     display: flex;
     align-items: center;
     width: 250px;
+    font-family: Fredoka;
     font-size: 35px;
-    font-style: normal;
-    font-weight: 100;
-    letter-spacing: -2.8px;
+    font-weight: bold;
     color: white;
 }
 
@@ -112,6 +111,12 @@ body {
 #main-tabs .tab.selected .title {
 }
 
+#info-panel {
+    position:absolute;
+    height: 250px;
+    width: 100%;
+    bottom: 0;
+}
 .workspace {
     padding-top: 12px;
 }
