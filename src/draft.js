@@ -10,7 +10,6 @@ export class Draft extends Component {
 
     draw() {
         this.title = div(this.el, '', 'title')
-
     }
 
     visible(b) {
@@ -18,15 +17,6 @@ export class Draft extends Component {
         var o = this.document.toSimpleObject();
         console.log(o);
         this.title.innerText = JSON.stringify(o);
-    }
-
-    get value() {
-        return {
-           
-        };
-    }
-
-    set value(o){
     }
 
 

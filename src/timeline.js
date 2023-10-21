@@ -262,7 +262,6 @@ export class Timeline extends Component {
     }
 
     setAttributes(e){
-        console.log(e);
         e.frame.addCharacter(e.character, e.fortune, e.conflict);
     }
 

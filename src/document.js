@@ -2,8 +2,11 @@ export class Document {
     constructor() {
         this.nouns = {};
         this.frames = [];
+        this.title;
+        this.framework;
+        this.tone;
 
-        for (var i = 0; i < 10; i++) {
+        for (var i = 0; i < 7; i++) {
             this.addFrame(i);
         }
     }
@@ -13,6 +16,12 @@ export class Document {
         v.forEach(doc => {
             this.nouns[doc.id] = doc;
         });
+    }
+
+    setAttributes(o) {
+        this.title = o.title;
+        this.framework = o.framework;
+        this.tone = o.tone;
     }
 
     addFrame(index) {
@@ -38,7 +47,10 @@ export class Document {
     toSimpleObject() {
         var unique = this.getUniqueNouns();
         return {
-            nouns: Object.keys(unique).map(id => {
+            title: this.title,
+            framework: this.framework,
+            tone: this.tone,
+            characters: Object.keys(unique).map(id => {
                 return {
                     id: this.nouns[id].id,
                     name: this.nouns[id].name,
@@ -46,10 +58,10 @@ export class Document {
             }),
             frames: this.frames.map(frame => {
                 return {
-                    id: frame.index,
+                    index: (frame.index + 1),
                     characters: frame.characters.map(character => {
                         return {
-                            name: character.id,
+                            name: this.nouns[character.id].name,
                             fortune: character.fortune,
                             conflict: character.conflict
                         }

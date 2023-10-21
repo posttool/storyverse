@@ -347,7 +347,7 @@ export class Selected extends Component {
         var visObj = typeof value === 'object';
         if (visObj && this._selected1.indexOf(value.id) != -1) {
             return true;
-        } else if (!visObj && this._selected1.indexOf(value) != -1) {
+        } else if (!visObj && this._selected1 && this._selected1.indexOf(value) != -1) {
             return true;
         }
         return false;

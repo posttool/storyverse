@@ -12,7 +12,13 @@ export class Genre extends Component {
         this.title = $$({ parent: this.el, el: 'input' })
         this.title.placeholder = 'title';
         this.tonesEl = $$sel({ parent: this.el, options: TONE.map(v => v.name) })
+        this.frameworksEl.addEventListener('change', this.onChange.bind(this));
+        this.title.addEventListener('change', this.onChange.bind(this));
+        this.tonesEl.addEventListener('change', this.onChange.bind(this));
+    }
 
+    onChange(e){
+        this.emit('change', this.value);
     }
 
     get value() {

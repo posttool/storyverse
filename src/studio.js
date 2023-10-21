@@ -40,12 +40,16 @@ export class Studio extends Component {
         this.mainTabs.selected = PICKER; // TODO save/restore state
 
         this.genre = new Genre();
+        this.document.setAttributes(this.genre.value)
         this.picker = new Picker(this, this.document);
         this.timeline = new Timeline(this.document);
         this.player = new Preview(this);
         this.editor = new StoryAttributes(this, this.timeline, this.document);
         this.draft = new Draft(this, this.document);
 
+        this.genre.addListener('change', e => {
+            this.document.setAttributes(e);
+        });
         this.picker.addListener('select', e => {
             this.timeline.placingData = e;
         });
@@ -56,7 +60,8 @@ export class Studio extends Component {
             console.log(e);
         });
         this.editor.addListener('change', e => {
-            this.timeline.setAttributes(e);
+            e.frame.addCharacter(e.character, e.fortune, e.conflict); // might be better to update document 
+            // and redraw timeline
         });
         this.player.addListener('previous', e => {
             this.timeline.gotoFrame(this.timeline.timeZ.destination - 1);
@@ -99,7 +104,7 @@ export class Studio extends Component {
             case DRAFT:
                 this.draft.visible(true);
                 break;
-    
+
         }
     }
 
