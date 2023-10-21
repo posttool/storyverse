@@ -103,13 +103,31 @@ export function $$mi(o) {
     return $$(o)
 }
 
-export function $$sel(o) {
+export function $$sel(o = { options: [], namevalue: false }) {
     o.el = 'select';
     var $sel = $$(o);
     for (var i = 0; i < o.options.length; i++) {
-        var $o = $$({ parent: $sel, el: 'option', text: o.options[i] });
+        if (o.namevalue) {
+            $$({ parent: $sel, el: 'option', text: o.options[i][0], value: o.options[i][1] });
+        } else {
+            $$({ parent: $sel, el: 'option', text: o.options[i] });
+        }
     }
     return $sel;
+}
+
+export function getSelectValue(selEl) {
+    return selEl.options[selEl.selectedIndex].value;
+}
+
+export function setSelectValue(selEl, value) {
+    for (var i=0; i<selEl.options.length; i++) {
+        if (selEl.options[i].value == value) {
+            selEl.selectedIndex = i;
+            return;
+        }
+    }
+    return;
 }
 
 export function format(str, color, parent) {
@@ -124,7 +142,6 @@ export class Component {
         this.parent = parent;
         this.listeners = {};
         this.el = $$(el_options);
-        this.value = null;
     }
 
     draw() { }
@@ -166,11 +183,9 @@ export class Component {
 }
 
 
-
-
 export class DbItemList extends Component {
     constructor(el_options, cell_class) {
-        super(el_options);
+        super(el_options, cell_class);
         this.value = [];
         this.children = [];
         this.renderer = cell_class;
@@ -272,19 +287,50 @@ export class DbItemList extends Component {
 export class Selected extends Component {
     constructor(options, values, renderer) {
         super(options);
-        this.values = values;
         this.renderer = renderer;
+        this.value = values;
+    }
+
+    set selected(v) {
+        this._selected = v;
+        if (v==null)
+            return;
+        var isObj = typeof v === 'object';
+        var isArray = Array.isArray(v);
+        if (isArray) {
+            isObj = v.length != 0 && typeof v[0] === 'object';
+            if (isObj)
+                this._selected1 = v.map(v => v.id);
+            else
+                this._selected1 = v;
+        } else {
+            this._selected1 = [];
+            if (isObj) {
+                this._selected1.push(v.id);
+            } else {
+                this._selected1.push(v);
+            }
+        }
+        this.redraw();
+    }
+
+    get selected() {
+        return this._selected;
+    }
+
+    set value(v) {
+        this._values = v;
         this.draw();
     }
 
     draw() {
+        this.el.innerHTML = '';
         this.children = [];
-        this.values.forEach((value, index) => {
+        this._values.forEach((value, index) => {
             var c = new this.renderer(this, value);
             c.addListener('click', e => {
-                this.value = value;
+                this.selected = value;
                 this.emit('change', value);
-                this.redraw();
             });
             this.children.push(c);
         });
@@ -292,8 +338,18 @@ export class Selected extends Component {
 
     redraw() {
         this.children.forEach(c => {
-            c.selected = (c.value == this.value);
-            c.redraw();
+            var match = this.getMatch(c.value);
+            c.select(match);
         });
+    }
+
+    getMatch(value) {
+        var visObj = typeof value === 'object';
+        if (visObj && this._selected1.indexOf(value.id) != -1) {
+            return true;
+        } else if (!visObj && this._selected1.indexOf(value) != -1) {
+            return true;
+        }
+        return false;
     }
 }

@@ -113,9 +113,9 @@ body {
 
 #info-panel {
     position:absolute;
-    height: 250px;
-    width: 100%;
-    bottom: 0;
+    height: 350px;
+    width: 99%;
+    bottom: 0px;
 }
 .workspace {
     padding-top: 12px;
@@ -145,9 +145,33 @@ body {
     letter-spacing: -1.8px;
 }
 .picker-list {
-    max-height: 150px;
+    max-height: 85%;
     overflow-y: scroll;
 }
+
+
+ /* ===== Scrollbar CSS ===== */
+  /* Firefox */
+  * {
+    scrollbar-width: auto;
+    scrollbar-color: #fafafa var(--dark-color);;
+  }
+
+  /* Chrome, Edge, and Safari */
+  *::-webkit-scrollbar {
+    width: 16px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: var(--dark-color);;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: #fafafa;
+    border-radius: 10px;
+    border: 3px solid var(--dark-color);;
+  }
+
 .picker-cell {
     width: 100%;
     padding: 4px 4px 4px 12px;
@@ -246,8 +270,10 @@ select {
     /* 1px solid var(--select-border); */
     font-size: 12px;
     cursor: pointer;
-    background-color: transparent;
+    background-color: var(--med-color);
+    border-radius: 6px;
     padding: 4px 10px 4px 10px;
+    margin: 8px 0 8px 0;
     font-size: 12px;
 }
 

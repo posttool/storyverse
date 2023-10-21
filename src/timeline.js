@@ -1,6 +1,10 @@
 import * as THREE from 'three';
 import { ICON_BASEPATH } from './icons';
 import { Component } from './utils';
+import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+
+
 
 class MPoint {
     constructor(initValue, speed = .1) {
@@ -19,25 +23,35 @@ export const MODE_PLACING = 0;
 export const MODE_SELECTING = 1;
 
 export class Timeline extends Component {
-    constructor() {
+    constructor(d) {
         super({ parent: document.body })
-        this.cameraY = new MPoint(2, .002);
-        this.cameraY.destination = 11;
+        this.document = d;
+
+        this.cameraY = new MPoint(2, .02);
+        this.cameraY.destination = 31;
         this.cameraLookAt = new THREE.Vector3(0, 0, -10);
+
         this.timeZ = new MPoint(0, .4);
         this.frameSize = 20;
 
         this.mode = MODE_PLACING;
 
-        this.setupScene();
-        this.draw();
-        this.setupRenderer();
+        // load font(s) then init
+        const self = this;
+        const loader = new FontLoader();
+        loader.load('/font/Fredoka_Bold.json', function (font) {
+            self.font = font;
+            self.setupScene();
+            self.draw();
+            self.setupRenderer();
+        });
     }
 
     setupScene() {
         this.scene = new THREE.Scene();
+
         this.camera = new THREE.PerspectiveCamera(20, window.innerWidth / window.innerHeight, 10, 400);
-        this.camera.position.z = 70;
+        this.camera.position.z = 100;
         this.scene.add(this.camera);
         // var dlight = new THREE.AmbientLight(0xffffff, 2);
         var dlight = new THREE.DirectionalLight(0xffffff, 10);
@@ -50,9 +64,9 @@ export class Timeline extends Component {
         // );
         // this.scene.add(this.debug);
 
-        this.disc = new Disc(0x00ff00);
-        this.disc.visible = false;
-        this.scene.add(this.disc);
+        this.rolloverDisc = new Disc(0x00ff00);
+        this.rolloverDisc.visible = false;
+        this.scene.add(this.rolloverDisc);
     }
 
     setupRenderer() {
@@ -62,8 +76,9 @@ export class Timeline extends Component {
         renderer.setAnimationLoop(animation);
         renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-        // animation & mouse handling
         var self = this;
+
+        // animation & mouse handling
         function animation(time) {
             self.update(time);
             renderer.render(self.scene, self.camera);
@@ -89,101 +104,102 @@ export class Timeline extends Component {
     }
 
     onClick() {
-        if (this.mode == MODE_PLACING) {
-            this.getIntersections();
-            if (this.data && this.frame && this.lane) {
-                this.frame.addCharacter(this.data, this.lane.fortune);
-                this.renderFortuneCurves();
-            } else if (this.data && this.frame && this.setting) {
-                this.frame.addSetting(this.data);
-            }
-            console.log('3')
+        switch (this.mode) {
+            case MODE_PLACING:
+                this.getIntersections();
+                if (this.placingData && this.frame && this.lane) {
+                    this.frame.addCharacter(this.placingData, this.lane.fortune);
+                    // this.renderFortuneCurves();
+                } else if (this.placingData && this.frame && this.setting) {
+                    this.frame.addSetting(this.placingData);
+                }
 
-        } else {
-            if (this.frame && this.lane)
-                this.emit('select', {
-                    frame: this.frame.index,
-                    fortune: this.lane.fortune,
-                    characters: this.frame.getByFortune(this.lane.fortune)
-                });
+                break;
+            case MODE_SELECTING:
+                break;
         }
-    }
 
+        if (this.frame) {
+            this.emit('select', {
+                frame: this.frame,
+                fortune: this.lane ? this.lane.fortune : -1
+            });
+        }
+
+    }
 
     draw() {
         this.rollovers = [];
 
-        this.lanes = new THREE.Group();
-        this.scene.add(this.lanes);
-
-        for (let x = 0; x < 5; x++) {
-            let f = new Lane(x, 3, 250, COLORS[x], ICON_BASEPATH + EMOJIS[x])
-            f.position.set(x * 5 - 10, 0, 0);
-            this.lanes.add(f);
-            this.rollovers.push(f.rollover);
-        }
+        this.root = new THREE.Group();
+        this.scene.add(this.root);
 
         this.frames = new THREE.Group();
-        this.scene.add(this.frames);
+        this.root.add(this.frames);
 
-        for (let i = 0; i < 10; i++) {
-            let f = new Frame(i, 29, this.frameSize);
+        for (let i = 0; i < this.document.frames.length; i++) {
+            let f = new Frame(i, 29, this.frameSize, this.document.frames[i], this.font);
             f.position.z = -i * this.frameSize;
-            f.position.y = .5;
+            f.position.y = -.01;
             this.frames.add(f);
             this.rollovers.push(f.rollover);
             this.rollovers.push(f.rolloverSetting);
         }
 
-        this.curves = new THREE.Group();
-        this.scene.add(this.curves);
-    }
+        this.lanes = new THREE.Group();
+        this.root.add(this.lanes);
 
-    renderFortuneCurves() {
-        clearGroup(this.curves);
-
-        var uniqueChars = this.getUniqueCharacters();
-        for (var j = 0; j < uniqueChars.length; j++) {
-            var discs = this.getDiscsByCharacter(uniqueChars[j]);
-            if (discs.length < 2)
-                continue;
-            var vectors = [];
-            for (var i = 0; i < discs.length; i++) {
-                var target = new THREE.Vector3();
-                discs[i].getWorldPosition(target)
-                target.z -= this.timeZ.destination * this.frameSize
-                vectors.push(target);
-            }
-            const curve = new THREE.CatmullRomCurve3(vectors);
-            const points = curve.getPoints(50);
-            const geometry = new THREE.BufferGeometry().setFromPoints(points);
-            const material = new THREE.LineBasicMaterial({ color: 0xffffff });
-            const splineObject = new THREE.Line(geometry, material);
-            this.curves.add(splineObject);
+        for (let x = 0; x < 5; x++) {
+            let f = new Lane(x, 3, this.document.frames.length * this.frameSize, COLORS[x], ICON_BASEPATH + EMOJIS[x])
+            f.position.x = x * 5 - 10;
+            this.lanes.add(f);
+            this.rollovers.push(f.rollover);
         }
+
+        this.curves = new THREE.Group();
+        this.root.add(this.curves);
     }
+
+    // renderFortuneCurves() {
+    //     clearGroup(this.curves);
+
+    //     var uniqueChars = this.getUniqueCharacters();
+    //     for (var j = 0; j < uniqueChars.length; j++) {
+    //         var discs = this.getDiscsByCharacter(uniqueChars[j]);
+    //         if (discs.length < 2)
+    //             continue;
+    //         var vectors = [];
+    //         for (var i = 0; i < discs.length; i++) {
+    //             var target = new THREE.Vector3();
+    //             discs[i].getWorldPosition(target)
+    //             target.z -= this.timeZ.destination * this.frameSize
+    //             vectors.push(target);
+    //         }
+    //         const curve = new THREE.CatmullRomCurve3(vectors);
+    //         const points = curve.getPoints(50);
+    //         const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    //         const material = new THREE.LineBasicMaterial({ color: 0xffffff });
+    //         const splineObject = new THREE.Line(geometry, material);
+    //         this.curves.add(splineObject);
+    //     }
+    // }
+
+
 
     getIntersections() {
         var vector = new THREE.Vector3(this.mouse.x, this.mouse.y, 1);
         vector.unproject(this.camera);
         // this.debug.position.set(vector.x, vector.y, vector.z);
 
-        if (this.lastIntersections) {
-            this.lastIntersections.forEach(i => {
-                i.object.parent.parent.hilight(false);
-            });
-        }
-
+        var ray = new THREE.Raycaster(this.camera.position, vector.sub(this.camera.position).normalize());
+        this.intersections = ray.intersectObjects(this.rollovers);
         this.lane = null;
         this.frame = null;
+        this.setting = false;
 
-        var ray = new THREE.Raycaster(this.camera.position, vector.sub(this.camera.position).normalize());
-        var intersects = ray.intersectObjects(this.rollovers);
-
-        if (intersects.length > 0) {
-            intersects.forEach(i => {
+        if (this.intersections.length > 0) {
+            this.intersections.forEach(i => {
                 var oo = i.object.parent.parent;
-                oo.hilight(true);
                 if (oo instanceof Frame) {
                     this.frame = oo;
                     this.setting = (i.object.userData == 'setting');
@@ -193,79 +209,90 @@ export class Timeline extends Component {
             });
         }
 
-        if (this.lastIntersections != intersects) {
-            this.redraw();
-        }
-
-        this.lastIntersections = intersects;
 
     }
 
-    redraw() {
-        if (this.mode == MODE_PLACING &&
-            this.data && this.lane && this.frame &&
-            inObjArrayWithId(this.frame.getByFortune(this.lane.fortune), this.data) == -1) {
-            this.disc.set(this.lane.color, this.data.icon);
-            this.disc.position.set(this.lane.position.x, 1,
-                this.frame.position.z - (this.frameSize / 2) + this.timeZ.destination * this.frameSize);
-            this.disc.cylinder.material.opacity = .5;
-            if (this.disc.sprite)
-                this.disc.sprite.material.opacity = .7;
-            this.disc.visible = true;
-        } else {
-            this.disc.visible = false;
+    redrawPlaceholders() {
+        if (this.mode == MODE_PLACING) {
+            const overFrame = this.placingData && this.frame && this.lane;
+            const overSetting = this.placingData && this.frame && this.setting;
+            const rd = this.rolloverDisc;
+            if (overFrame) {
+                rd.set(this.lane.color, this.placingData.icon);
+                rd.position.set(this.lane.position.x, 1.25,
+                    this.frame.position.z + this.timeZ.destination * this.frameSize);
+                rd.cylinder.material.opacity = .5;
+                if (rd.sprite)
+                    rd.sprite.material.opacity = .7;
+                rd.visible = true;
+            } else if (overSetting) {
+                rd.set(0, this.placingData.icon);
+                rd.position.set(this.frame.position.x + this.frame.width / 2,
+                    this.frame.position.y,
+                    this.frame.position.z + this.frame.height / 2);
+                rd.cylinder.material.opacity = 0;
+                if (rd.sprite)
+                    rd.sprite.material.opacity = .7;
+                rd.visible = true;
+            } else {
+                rd.visible = false;
+            }
         }
 
-        if (this.mode == MODE_PLACING &&
-            this.data && this.frame && this.setting &&
-            this.frame.setting != this.data) {
-            this.disc.set(0, this.data.icon);
-            this.disc.position.set(this.frame.position.x + this.frame.width / 2,
-                this.frame.position.y,
-                this.frame.position.z + this.frame.height/2);
-            this.disc.cylinder.material.opacity = 0;
-            if (this.disc.sprite)
-                this.disc.sprite.material.opacity = .7;
-            this.disc.visible = true;
-        }
+        // const qq1 = this.frame.data.getByFortune(this.lane.fortune);
+        // const qq2 = inObjArrayWithId(qq1, this.placingData) == -1;    
     }
 
     update(time) {
+        if (this.intersections) {
+            this.intersections.forEach(i => {
+                var oo = i.object.parent.parent; // a Frame / a Lane
+                oo.hilight(false);
+            });
+        }
         this.getIntersections();
+        if (this.intersections) {
+            this.intersections.forEach(i => i.object.parent.parent.hilight(true));
+        }
+        this.redrawPlaceholders();
         this.camera.position.y = this.cameraY.next();
         this.camera.lookAt(this.cameraLookAt);
         this.frames.position.z = this.timeZ.next() * this.frameSize;
         this.curves.position.z = this.frames.position.z;
     }
 
+    setAttributes(e){
+        console.log(e);
+        e.frame.addCharacter(e.character, e.fortune, e.conflict);
+    }
 
     gotoFrame(d) {
         this.timeZ.destination = d;
     }
 
 
-    //returns the unique characters by looking at all the frames
+    //returns the unique characters by looking at all the frames [depredcated lol]
     getUniqueCharacters() {
         var map = {};
         for (var i = 0; i < this.frames.children.length; i++) {
-            var ids = this.frames.children[i].getIds();
-            for (var j = 0; j < ids.length; j++) {
-                map[ids[j]] = true;
+            var c = this.frames.children[i].data.characters;
+            for (var j = 0; j < c.length; j++) {
+                map[c[j].id] = true;
             }
         }
         return Object.keys(map);
     }
 
     //returns a list of a single character through frames.
-    getDiscsByCharacter(id) {
-        var discs = [];
-        for (var i = 0; i < this.frames.children.length; i++) {
-            var d = this.frames.children[i].getDisc(id);
-            if (d)
-                discs.push(d);
-        }
-        return discs;
-    }
+    // getDiscsByCharacter(id) {
+    //     var discs = [];
+    //     for (var i = 0; i < this.frames.children.length; i++) {
+    //         var d = this.frames.children[i].getDisc(id);
+    //         if (d)
+    //             discs.push(d);
+    //     }
+    //     return discs;
+    // }
 
 
 }
@@ -335,15 +362,15 @@ class Lane extends UX3D {
         this.box.position.set(-this.width / 2, 0, -this.height);
         this.add(this.box);
 
-        const texture = getTexture(this.emoji);
-        const plane = new THREE.Mesh(
-            new THREE.PlaneGeometry(3, 3),
-            new THREE.MeshLambertMaterial({ map: texture, side: THREE.DoubleSide, opacity: 1, transparent: true })
-        );
+        // const texture = getTexture(this.emoji);
+        // const plane = new THREE.Mesh(
+        //     new THREE.PlaneGeometry(3, 3),
+        //     new THREE.MeshLambertMaterial({ map: texture, side: THREE.DoubleSide, opacity: 1, transparent: true })
+        // );
 
-        plane.rotation.set(-Math.PI * .5, 0, 0);
-        plane.position.set(0, .01, -40);
-        this.add(plane);
+        // plane.rotation.set(-Math.PI * .5, 0, 0);
+        // plane.position.set(0, .01, -40);
+        // this.add(plane);
 
         this.rollover = this.box.rollover;
     }
@@ -353,24 +380,43 @@ class Lane extends UX3D {
     }
 }
 
+/** a single frame in the timeline, will hold any number of unique characters with fortunes  */
 class Frame extends UX3D {
-    constructor(i, w, h) {
+    constructor(i, w, h, d, f) {
         super();
         this.index = i;
         this.width = w;
         this.height = h;
-        this.characters = [];//{data: {id: uuid, ...}, fortune: int}
-        this.setting = null; //data
+        this.data = d;
+        this.font = f;
         this.draw();
     }
 
     draw() {
-        this.box = new BoxWithOutline(this.width, this.height, 0xffffff);
+
+        this.frameIcon = getSprite(ICON_BASEPATH + 'clapper.png');
+        this.frameIcon.position.set(- this.width / 2 - 1, .5, 0);
+        this.add(this.frameIcon);
+
+        this.frameLabel = new TextGeometry('' + (this.index + 1),
+            { font: this.font, size: 1, height: .1, curveSegments: 12 });
+        // this.frameLabel.computeBoundingBox();
+        // const centerOffset = - 0.5 * ( textGeo.boundingBox.max.x - textGeo.boundingBox.min.x );
+        var textMesh1 = new THREE.Mesh(this.frameLabel,
+            new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, opacity: 1, transparent: true })
+        );
+        textMesh1.position.x = -this.width / 2 - 3;
+        textMesh1.position.y = -.5;
+        this.add(textMesh1);
+
+        this.box = new BoxWithOutline(this.width, this.height, 0xffffff, getSquareShape2(this.width, this.height));
         this.box.rotation.set(Math.PI * .5, 0, 0);
         this.box.position.set(-this.width / 2, 0, -this.height);
         this.add(this.box);
+        this.hilight(false);
+
         this.boxSetting = new BoxWithOutline(3, 3, 0xffffff);
-        this.boxSetting.position.set(this.width / 2 , -1.5, 0);
+        this.boxSetting.position.set(this.width / 2, -1.5, 0);
         this.add(this.boxSetting);
 
         this.rollover = this.box.rollover;
@@ -382,70 +428,45 @@ class Frame extends UX3D {
 
     redrawCharacters() {
         this.clear(this.g);
-        this.characters.forEach((info, index) => {
-            var d = new Disc(getColor(info.fortune), info.data.icon);
-            d.userData = info.data.id;
+        this.data.characters.forEach((info, index) => {
+            var d = new Disc(getColor(info.fortune), info.doc().icon);
+            d.userData = info.id;
             d.position.set(info.fortune * 5 - 10, .1, -index * 5);
             this.g.add(d);
         });
     }
 
     redrawSetting() {
-        if (this.setting) {
+        if (this.data.setting) {
             if (this.sprite) {
                 this.boxSetting.remove(this.sprite);
             }
-            this.sprite = getSprite(this.setting.icon);
-            this.sprite.position.set(1.5,1.5,.1)
+            const settingData = this.data.document.getById(this.data.setting);
+            this.sprite = getSprite(settingData.icon);
+            this.sprite.position.set(1.5, 1.5, .2)
             this.boxSetting.add(this.sprite);
         }
     }
 
     hilight(b) {
-        this.box.rollover.material.opacity = b ? .3 : .1;
+        this.box.rollover.material.opacity = b ? .1 : 0;
     }
 
-    addCharacter(data, fortune) {
-        var match = this.getById(data.id);
+    addCharacter(data, fortune, conflict) {
+        var match = this.data.getById(data.id);
         if (match) {
             match.fortune = fortune;
-            match.data.icon = data.icon;
+            match.icon = data.icon;
+            match.conflict = conflict;
         } else {
-            this.characters.push({ data: data, fortune: fortune });
+            this.data.addCharacter(data.id, fortune, conflict);
         }
         this.redrawCharacters();
     }
 
     addSetting(data) {
-        this.setting = data;
+        this.data.setting = data.id;
         this.redrawSetting();
-    }
-
-    getByFortune(fortune) {
-        var list = [];
-        for (var i = 0; i < this.characters.length; i++) {
-            if (this.characters[i].fortune == fortune) {
-                list.push(this.characters[i].data);
-            }
-        }
-        return list;
-    }
-
-    getById(id) {
-        for (var i = 0; i < this.characters.length; i++) {
-            if (this.characters[i].data.id == id) {
-                return this.characters[i];
-            }
-        }
-        return null;
-    }
-
-    getIds() {
-        var map = {};
-        for (var i = 0; i < this.characters.length; i++) {
-            map[this.characters[i].data.id] = true;
-        }
-        return Object.keys(map);
     }
 
     getDisc(id) {
@@ -457,12 +478,11 @@ class Frame extends UX3D {
         return null;
     }
 
-
 }
 
 
 class BoxWithOutline extends THREE.Group {
-    constructor(w, h, c, e) {
+    constructor(w, h, c, lineShape) {
         super();
         const squareShape = getSquareShape(w, h);
 
@@ -471,7 +491,9 @@ class BoxWithOutline extends THREE.Group {
             new THREE.MeshBasicMaterial({ color: c, side: THREE.DoubleSide, opacity: .1, transparent: true })
         )
 
-        const geometryPoints = new THREE.BufferGeometry().setFromPoints(squareShape.getPoints());
+        if (lineShape == null)
+            lineShape = squareShape;
+        const geometryPoints = new THREE.BufferGeometry().setFromPoints(lineShape.getPoints());
         let line = new THREE.Line(geometryPoints, new THREE.LineBasicMaterial({ color: c }));
         let line2 = new THREE.Line(geometryPoints, new THREE.LineBasicMaterial({ color: c }));
         line2.position.x = .02;
@@ -509,6 +531,11 @@ function getSquareShape(W, H) {
         .lineTo(W, 0)
         .lineTo(0, 0);
 }
+function getSquareShape2(W, H) {
+    return new THREE.Shape()
+        .moveTo(0, H)
+        .lineTo(W, H);
+}
 
 function random(m) {
     return Math.floor(Math.random() * m);
@@ -543,11 +570,8 @@ function inObjArrayWithId(array, obj) {
 }
 /*
 
-
     setUpMouseHander(canvas,doMouseDown,doMouseMove);
     setUpTouchHander(canvas,doMouseDown,doMouseMove);
-
-
 */
 
 

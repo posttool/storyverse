@@ -34,7 +34,7 @@
       "port": 5001
     },
     "hosting": {
-      "port": 5002
+      "port": 5000
     },
     "ui": {
       "enabled": true

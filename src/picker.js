@@ -12,8 +12,9 @@ import {
 
 
 export class Picker extends Component {
-    constructor(parent) {
+    constructor(parent, d) {
         super({ parent: $('picker'), class: 'row' }, parent);
+        this.document = d;
         this.draw();
     }
 
@@ -66,6 +67,8 @@ export class Picker extends Component {
             if (this.form)
                this.emit('select', this.form.value);
         }
+
+        this.document.setNouns(this.objects.value);
     }
 
     showPickerForm(index) {
@@ -81,8 +84,6 @@ export class Picker extends Component {
         this.form.redraw();
         this.objects.select(this.form.value);
     }
-
-
 }
 
 
@@ -112,7 +113,11 @@ export class PickerCell extends Component {
     }
 
     select(b) {
-        if (b) { this.el.classList.add('selected'); } else { this.el.classList.remove('selected'); }
+        if (b) { 
+            this.el.classList.add('selected'); 
+        } else { 
+            this.el.classList.remove('selected'); 
+        }
     }
 
 }
@@ -204,7 +209,7 @@ export class PickerForm extends Component {
                     name: this.nameEl.value,
                     description: this.descriptionEl.value,
                     // color: this.colors.value,
-                    icon: this.icons.value
+                    icon: this.icons.selected
                 }
                 this.isSaving = true;
                 this.parent.services.Picker.Update(this.value).then(results => {
@@ -226,7 +231,7 @@ export class PickerForm extends Component {
             // this.colors.value = this.value.color;
             // this.colors.redraw();
             if (this.value.icon) {
-                this.icons.value = this.value.icon;
+                this.icons.selected = this.value.icon;
                 this.icon.src = this.value.icon;
             }
             this.icons.redraw();
@@ -303,4 +308,9 @@ class IconCell extends Component {
             this.el.classList.remove('selected');
         }
     }
+
+    select(b) {
+        this.selected = b;
+        this.redraw();
+     }
 }

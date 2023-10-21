@@ -1,4 +1,3 @@
-import { getByName } from './utils.js';
 
 export const FRAMEWORKS = [
     { name: "The Hero's Journey", description: "A common narrative pattern where a hero embarks on an adventure, faces trials, undergoes personal growth, and returns transformed." },
@@ -32,6 +31,13 @@ export const TONE = [
     { name: "Serious", description: "The tone is solemn and earnest, dealing with weighty and significant themes without humor or frivolity." },
 ]
 
+export const FORTUNES = [
+  { name: "Extremely Fortunate", color: 0x67dd00, icon: 'crazy-face.png', description: "Self-Actualization, Overflowing Resources, Unbreakable Bonds, Universal Trust, Paths Clear and Illuminated" },
+  { name: "Fortunate", color: 0xda0036, icon: 'grinning-face.png', description: "Self-Confidence, Abundant Resources, Strong Alliances, Trusted, Pathways Open" },
+  { name: "Neutral", color: 0xefff4c, icon: 'face-without-mouth.png', description: "Self-Reflection, Adequate Resources, Neutral Relationships, Open Paths, Uncertainty" },
+  { name: "Unfortunate", color: 0x86bbef, icon: 'confused-face.png', description: "Self-Doubt, Limited Resources, Friction with Allies, Untrusted, Blocked Paths" },
+  { name: "Extremely Unfortunate", color: 0xf200c5, icon: 'anxious-face.png', description: "Self-Loathing, Isolation, Imprisonment, Inability to Communicate, Emotional Paralysis" }
+]
 
 
 /// v3 json
