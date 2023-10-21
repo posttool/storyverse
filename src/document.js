@@ -22,6 +22,42 @@ export class Document {
     getById(id) {
         return this.nouns[id];
     }
+
+    getUniqueNouns() {
+        var uniqueCharacters = {};
+        this.frames.forEach(frame => {
+            frame.characters.forEach(character => {
+                if (!(character.id in uniqueCharacters)) {
+                    uniqueCharacters[character.id] = frame;
+                }
+            });
+        });
+        return uniqueCharacters;
+    }
+
+    toSimpleObject() {
+        var unique = this.getUniqueNouns();
+        return {
+            nouns: Object.keys(unique).map(id => {
+                return {
+                    id: this.nouns[id].id,
+                    name: this.nouns[id].name,
+                }
+            }),
+            frames: this.frames.map(frame => {
+                return {
+                    id: frame.index,
+                    characters: frame.characters.map(character => {
+                        return {
+                            name: character.id,
+                            fortune: character.fortune,
+                            conflict: character.conflict
+                        }
+                    })
+                }
+            })
+        };
+    }
 }
 
 export class FrameData {

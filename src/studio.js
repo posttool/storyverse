@@ -4,6 +4,7 @@ import { Picker } from './picker.js';
 import { Genre } from './genre.js';
 import { Preview } from './preview.js';
 import { Account } from './account.js';
+import { Draft } from './draft.js';
 import { Document } from './document.js';
 import { Timeline, MODE_PLACING, MODE_SELECTING } from './timeline.js';
 
@@ -43,6 +44,7 @@ export class Studio extends Component {
         this.timeline = new Timeline(this.document);
         this.player = new Preview(this);
         this.editor = new StoryAttributes(this, this.timeline, this.document);
+        this.draft = new Draft(this, this.document);
 
         this.picker.addListener('select', e => {
             this.timeline.placingData = e;
@@ -53,7 +55,7 @@ export class Studio extends Component {
         this.timeline.addListener('place', e => {
             console.log(e);
         });
-        this.editor.addListener('change', e=>{
+        this.editor.addListener('change', e => {
             this.timeline.setAttributes(e);
         });
         this.player.addListener('previous', e => {
@@ -80,11 +82,12 @@ export class Studio extends Component {
         this.genre.visible(false);
         this.picker.visible(false);
         this.editor.visible(false);
+        this.draft.visible(false);
         this.mainTabs.redraw();
+        this.timeline.mode = MODE_SELECTING;
         switch (this.mainTabs.selected) {
             case GENRE:
                 this.genre.visible(true);
-                this.timeline.mode = MODE_PLACING;
                 break;
             case PICKER:
                 this.picker.visible(true);
@@ -92,8 +95,11 @@ export class Studio extends Component {
                 break;
             case EDITOR:
                 this.editor.visible(true);
-                this.timeline.mode = MODE_SELECTING;
                 break;
+            case DRAFT:
+                this.draft.visible(true);
+                break;
+    
         }
     }
 
@@ -137,7 +143,7 @@ class TabCell extends Component {
     }
 
     select(b) {
-       this.selected = b;
-       this.redraw();
+        this.selected = b;
+        this.redraw();
     }
 }
