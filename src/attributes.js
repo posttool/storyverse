@@ -15,7 +15,7 @@ export class StoryAttributes extends Component {
         this.objects = new Selected({ parent: col1, class: 'picker-list' }, [], PickerCell);
 
         var col2 = div(this.el, 'col2');
-        this.frameEl = div(col2);
+        this.frameEl = div(col2, '');
         this.formsEl = $$({ parent: col2 });
 
         this.objects.addListener('change', (value) => {
@@ -33,6 +33,10 @@ export class StoryAttributes extends Component {
         e.frame.data.characters.forEach(char => {
             this.nouns.push(char);
         });
+
+        if (this.character == null && this.nouns.length != 0) {
+            this.character = this.nouns[0];
+        }
         // if (e.frame.data.setting) {
         //     this.nouns.push(this.frame.data.getById(e.frame.data.setting));
         // }
@@ -43,7 +47,9 @@ export class StoryAttributes extends Component {
         if (this.nouns) {
             this.objects.value = this.nouns;
             this.objects.selected = this.character;
-            this.frameEl.innerText = "Scene " + this.frame.index;
+            this.frameEl.innerText = "Scene " + this.frame.index ;
+            if (this.nouns.length==0) 
+                this.frameEl.innerText += " (empty)"
             this.showCharacterForm();
         }
     }

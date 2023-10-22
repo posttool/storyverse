@@ -1,3 +1,5 @@
+import { FORTUNES } from './prompts'
+
 export class Document {
     constructor() {
         this.nouns = {};
@@ -40,12 +42,20 @@ export class Document {
                     uniqueCharacters[character.id] = frame;
                 }
             });
+            if (frame.setting)
+                uniqueCharacters[frame.setting] = frame;
         });
         return uniqueCharacters;
     }
 
     toSimpleObject() {
         var unique = this.getUniqueNouns();
+        var lastFrame = 0;
+        this.frames.forEach((frame, index) => {
+            if (frame.characters.length != 0) {
+                lastFrame = index;
+            }
+        });
         return {
             title: this.title,
             framework: this.framework,
@@ -54,16 +64,21 @@ export class Document {
                 return {
                     id: this.nouns[id].id,
                     name: this.nouns[id].name,
+                    description: this.nouns[id].description
                 }
             }),
-            frames: this.frames.map(frame => {
+            frames: this.frames.slice(0, lastFrame+1).map(frame => {
                 return {
                     index: (frame.index + 1),
+                    setting: frame.setting ? this.nouns[frame.setting].name : 'None specified',
                     characters: frame.characters.map(character => {
+                        var conflictType = (character.conflict == '-1' || character.conflict == null) ? null :
+                            (character.id == character.conflict) ? 'Internal' : 'External';
                         return {
                             name: this.nouns[character.id].name,
-                            fortune: character.fortune,
-                            conflict: character.conflict
+                            fortune: FORTUNES[character.fortune].name,
+                            conflict: conflictType,
+                            conflictName: (conflictType == 'External') ? this.nouns[character.conflict].name : null
                         }
                     })
                 }
