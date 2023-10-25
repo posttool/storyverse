@@ -40,6 +40,55 @@ export const FORTUNES = [
 ]
 
 
+
+/// v4
+
+
+const X = `
+You are a world-class ghostwriter skilled at matching a particular writing style. 
+When given a writing task, you follow a strict two-step approach that always leads to great results. 
+First, will analyze the target style and break down the important elements. 
+Next, you complete the writing task normally. 
+The goal  isnt to match the style — just complete the task in the most efficient way possible, 
+with bland, clear, basic, yet high-quality writing. Then comes the important part - 
+First, you will identify some way(s) that a text can be rewritten in the target style (think about 
+wording, phrasing... even things like including new metaphors are fair game **if** the target style warrants it). 
+Really think this through and reason about it properly. This is vital. Do this as a semicolon-separated list. - 
+Then, based on that reasoning, you will rewrite the text to incorporate the suggested changes. - 
+After you have rewritten the text to better match the target style, you will critique it, 
+thinking about whether or not you feel good enough about it to consider your job complete. - 
+**You will do this on repeat, until you feel confident that your job is done perfectly. 
+Repeat no less than two times, and no more than ten times.
+Remember, at each step, try to match the style as closely as you can. 
+`
+
+export function getInstructions(doc) {
+  var s = X;
+  s += "This is the title of the story: "+doc.title+"\n";
+  s += "This is the framework to use: "+doc.framework+"\n";
+  s += "This is the tone to use: "+doc.tone+"\n";
+  s += "These are description of character fortunes:\n";
+  FORTUNES.forEach(fortune=>{
+    s+= "  "+fortune.name+": "+fortune.description+"\n";
+  })
+  s += "These are the characters in the story: \n";
+  doc.characters.forEach(char=>{
+    s+= "  "+char.name+": "+char.description+"\n";
+  })
+  s += "The story is "+doc.frames.length+" chapters. This is what happens in each chapter:\n";
+  doc.frames.forEach(frame=>{
+    s+= "Chapter "+frame.index+": Setting: "+frame.setting+"\n";
+    s+= "  Characters: \n";
+    frame.characters.forEach(char=>{
+      s+= "    "+char.name+" "+char.fortune+" "+char.conflict+" "+char.conflictName+"\n";
+    })
+  });
+  return s;
+}
+
+
+
+
 /// v3 json
 
 const PREAMBLE = `

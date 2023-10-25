@@ -1,5 +1,5 @@
 import { $, $$, $$mi, $$sel, getSelectValue, div, Component } from './utils.js';
-import { FRAMEWORKS, TONE } from './prompts.js'
+import { getInstructions } from './prompts.js'
 
 export class Draft extends Component {
     constructor(parent, doc) {
@@ -15,8 +15,7 @@ export class Draft extends Component {
     visible(b) {
         super.visible(b);
         var o = this.document.toSimpleObject();
-        console.log(o);
-        this.title.innerText = JSON.stringify(o);
+        this.title.innerText = getInstructions(o);
     }
 
 

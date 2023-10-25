@@ -3,6 +3,7 @@ import { ICON_BASEPATH } from './icons';
 import { Component } from './utils';
 import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+import { MeshLine, MeshLineMaterial, MeshLineRaycast } from 'three.meshline';
 
 
 
@@ -261,10 +262,6 @@ export class Timeline extends Component {
         this.curves.position.z = this.frames.position.z;
     }
 
-    setAttributes(e){
-        e.frame.addCharacter(e.character, e.fortune, e.conflict);
-    }
-
     gotoFrame(d) {
         this.timeZ.destination = d;
     }
@@ -340,6 +337,29 @@ class Disc extends UX3D {
             this.add(this.sprite);
         }
 
+    }
+
+    arrow(type) {
+        const points = [];
+        if (type == 1) {
+            for (let j = 0; j < Math.PI; j += 2 * Math.PI / 100) {
+                points.push(new THREE.Vector3(Math.cos(j), Math.sin(j) + 2, 0));
+            }
+        }
+        else {
+            points.push(new THREE.Vector3(0,  2, 0));
+            points.push(new THREE.Vector3(-2, 2, 0));
+        }
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const line = new MeshLine();
+        line.setGeometry(geometry);
+
+        var material = new MeshLineMaterial({
+            transparent: true,
+            side: THREE.DoubleSide, color: new THREE.Color(0xFFAA54), lineWidth: .2
+        });
+        var mesh = new THREE.Mesh(line.geometry, material);
+        this.add(mesh);
     }
 
 }
@@ -429,6 +449,13 @@ class Frame extends UX3D {
         this.clear(this.g);
         this.data.characters.forEach((info, index) => {
             var d = new Disc(getColor(info.fortune), info.doc().icon);
+            if (info.conflict != null && info.conflict != '-1') {
+                if (info.conflict == info.id) {
+                    d.arrow(1);
+                } else {
+                    d.arrow(0);
+                }
+            }
             d.userData = info.id;
             d.position.set(info.fortune * 5 - 10, .1, -index * 5);
             this.g.add(d);

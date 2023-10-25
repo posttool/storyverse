@@ -99,6 +99,15 @@ export class FrameData {
         this.characters.push(new CharacterData(this, id, fortune, conflict));
     }
 
+    removeCharacter(id){
+        for (var i = 0; i < this.characters.length; i++) {
+            if (this.characters[i].id == id) {
+                this.characters.splice(i, 1);
+                return;
+            }
+        }
+    }
+
     getByFortune(fortune) {
         var list = [];
         for (var i = 0; i < this.characters.length; i++) {

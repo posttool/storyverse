@@ -98,9 +98,7 @@ export class PickerCell extends Component {
     draw() {
         this.iconEl = $$({ parent: this.el, class: 'icon' });
         this.iconImg = $$({ parent: this.iconEl, el: 'img' });
-        this.textEl = $$({ parent: this.el, class: 'textc' });
-        $$({ parent: this.textEl, class: 'text', text: this.value.name })
-        // $$({ parent: this.textEl, class: 'text2', text: this.value.description.substring(0,16) })
+        this.textEl = $$({ parent: this.el, class: 'text', text: this.value.name })
         this.el.addEventListener('click', e => {
             this.emit('click');
         });

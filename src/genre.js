@@ -8,10 +8,16 @@ export class Genre extends Component {
     }
 
     draw() {
-        this.frameworksEl = $$sel({ parent: this.el, options: FRAMEWORKS.map(v => v.name) });
-        this.title = $$({ parent: this.el, el: 'input' })
+        var $r1 = div(this.el)
+        this.title = $$({ parent: $r1, el: 'input' })
         this.title.placeholder = 'title';
-        this.tonesEl = $$sel({ parent: this.el, options: TONE.map(v => v.name) })
+
+        var $r2 = div(this.el)
+        this.frameworksEl = $$sel({ parent: $r2, options: FRAMEWORKS.map(v => v.name) });
+
+        var $r3 = div(this.el)
+        this.tonesEl = $$sel({ parent: $r3, options: TONE.map(v => v.name) });
+        
         this.frameworksEl.addEventListener('change', this.onChange.bind(this));
         this.title.addEventListener('change', this.onChange.bind(this));
         this.tonesEl.addEventListener('change', this.onChange.bind(this));

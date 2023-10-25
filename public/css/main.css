@@ -9,11 +9,11 @@
 
 
 :root {
-    --bg-color: #fff;  
+    --bg-color: #fff;
     --dark-color: #1f1f1f;
     --med-color: #464646;
     --light-color: #ACACBE;
-    --selected-bg:  rgb(67, 64, 64, .5);
+    --selected-bg: rgb(67, 64, 64, .5);
     --cbig: 50px;
     --cmedium: 33px;
     --csmall: 15px;
@@ -36,21 +36,20 @@
 .padding-small {
     padding: 4px;
 }
+
 .big-icon {
     font-size: 24px;
     color: white;
 }
-html {
-}
 
-body {
-}
+html {}
 
-#root {
-}
+body {}
 
-.workspace .col1, .workspace  .col2 {
-    width: 50%;
+#root {}
+
+.workspace .col1,
+.workspace .col2 {
     background-color: var(--dark-color);
 }
 
@@ -58,7 +57,6 @@ body {
     display: flex;
     align-items: center;
     width: 250px;
-    font-family: Fredoka;
     font-size: 35px;
     font-weight: bold;
     color: white;
@@ -67,7 +65,11 @@ body {
 .title {
     font-size: 24px;
     font-style: normal;
-
+}
+.small-title {
+    font-size: 19px;
+    font-weight: bold;
+    color: white;
 }
 
 .user-container {
@@ -86,7 +88,7 @@ body {
     margin: 100px;
     display: flex;
     flex-direction: column;
-    align-items: center;  
+    align-items: center;
 }
 
 #main-tabs {
@@ -100,7 +102,7 @@ body {
 }
 
 #main-tabs .tab .title {
-    font-size:14px;
+    font-size: 14px;
 }
 
 #main-tabs .tab.selected {
@@ -108,24 +110,20 @@ body {
     border-radius: 4px;
 }
 
-#main-tabs .tab.selected .title {
-}
+#main-tabs .tab.selected .title {}
 
 #info-panel {
-    position:absolute;
-    height: 350px;
-    width: 99%;
+    position: absolute;
+    height: 320px;
     bottom: 0px;
 }
+
 .workspace {
     padding-top: 12px;
 }
 
-#picker {
-}
-#picker .col1 { width: 30%; }
 
-.picker-toolbar {
+/* .picker-toolbar {
     display: flex;
     flex-direction: row-reverse;
     align-items: center;
@@ -143,43 +141,60 @@ body {
     font-style: normal;
     font-weight: 100;
     letter-spacing: -1.8px;
-}
+} */
+
 .picker-list {
-    max-height: 85%;
+    height: 230px;
+    width: 220px;
     overflow-y: scroll;
 }
 
 
- /* ===== Scrollbar CSS ===== */
-  /* Firefox */
-  * {
+
+button {
+    border: 0;
+    background-color: var(--dark-color);
+    color: white;
+    padding: 3px 10px 3px 10px;
+}
+
+#framework_container {
+    visibility: hidden;
+}
+
+/* ===== Scrollbar CSS ===== */
+/* Firefox */
+* {
     scrollbar-width: auto;
-    scrollbar-color: #fafafa var(--dark-color);;
-  }
+    scrollbar-color: #fafafa var(--dark-color);
+    ;
+}
 
-  /* Chrome, Edge, and Safari */
-  *::-webkit-scrollbar {
+/* Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
     width: 16px;
-  }
+}
 
-  *::-webkit-scrollbar-track {
-    background: var(--dark-color);;
-  }
+*::-webkit-scrollbar-track {
+    background: var(--dark-color);
+    ;
+}
 
-  *::-webkit-scrollbar-thumb {
+*::-webkit-scrollbar-thumb {
     background-color: #fafafa;
     border-radius: 10px;
-    border: 3px solid var(--dark-color);;
-  }
+    border: 3px solid var(--dark-color);
+    ;
+}
 
 .picker-cell {
-    width: 100%;
-    padding: 4px 4px 4px 12px;
+    padding: 8px 4px 4px 12px;
     display: flex;
     flex-direction: row;
     align-items: center;
     margin: 0 0 4px 0;
 }
+
 .picker-cell.selected {
     background-color: var(--med-color);
 }
@@ -190,13 +205,14 @@ body {
 
 .picker-cell-min {
     background-color: inherit;
-    width: 100px;
 }
 
 .icon {
     width: 24px;
     height: 24px;
+    margin: 0 4px 0 4px;
 }
+
 .icon img {
     width: 24px;
 }
@@ -205,20 +221,16 @@ body {
     border: 5px solid white;
 }
 
-.picker-cell .textc {
-    width: 70%;
-}
 
 .picker-cell .text {
-    font-family: Lato;
+    max-width:120px;
     font-size: 16px;
+    text-overflow: ellipsis;
+    white-space: nowrap; 
+    overflow: hidden;
 }
 
-.picker-cell .text2 {
-    font-family: Lato;
-    font-size: 12px;
-    color: #999;
-}
+
 
 .toggle-component {
     position: relative;
@@ -286,13 +298,10 @@ textarea {
     width: 200px;
 }
 
-textarea {
-}
 
 .colors {
     display: flex;
     flex-direction: row;
-
 }
 
 .color-choice {
@@ -322,306 +331,4 @@ textarea {
 
 .icon-choice.selected {
     border: 3px solid white;
-}
-
-
-
-.editor-props {
-    position: absolute;
-    top: 0;
-    right: 10px;
-    /* background-color: rgba(32, 33, 37, 0.60);
-    filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.25)); */
-    background-color: var(--selected-bg);
-    padding: 10px;
-    width: 200px;
-    height: 100%;
-    overflow-y: scroll;
-}
-
-.gprops {
-display: flex;
-flex-direction: column;
-}
-.gprops .props{
-
-}
-.gprops .info{
-    
-}
-
-.target-props {
-    display: flex;
-    flex-direction: row;
-}
-
-.target-props .character {
-    width: 80px;
-}
-.target-props .character .name {
-    font-size: 16px;
-}
-.target-prop {
-    width: 115px;
-    margin: 0 15px 0 0;
-    border-top: 3px solid #999;
-    background: #202125;
-    padding: 10px;
-    position: relative;
-}
-
-.target-prop .prop-title {
-   margin: 0 0 10px 0;
-}
-
-.target-prop .labels {
-    position: relative;
-}
-
-.target-prop .row {
-    height: 22px;
-}
-
-.target-prop .row .label {
-    font-size: 10px;
-    width: 50px;
-}
-
-.target-prop .row .line {
-    width: 33px;
-    margin-top: 8px;
-    border-top: 1px solid #555;
-}
-
-
-.target-prop .line1 {
-    border-left: 2px solid black;
-    position: absolute;
-    top: 0;
-    left: 65px;
-    height: 50px;
-}
-
-.target-prop .line2 {
-    border-left: 2px solid white;
-    position: absolute;
-    left: 66px;
-    height: 50px;
-}
-
-.target-prop .dot {
-    width: 10px;
-    height: 10px;
-    background-color: white;
-    position: absolute;
-    top: 0;
-    left: 62px;
-}
-
-
-.window {
-    border: 1px solid #333;
-    margin-bottom: 10px;
-}
-
-.header {
-    border-bottom: 1px solid #333;
-    padding: 5px;
-    height: 30px;
-    background-color: #f5f5f5;
-}
-
-.window-body {
-    min-height: 100px;
-    background-color: #fff;
-}
-
-.bigpad {
-    padding: 100px 0 100px 10px;
-}
-
-#stage-body,
-#stuff-body {
-    display: flex;
-    flex-direction: row;
-}
-
-.character-body,
-.setting-body {
-    display: flex;
-    flex-direction: row;
-    color: #888;
-}
-
-.place {
-    border: 1px dashed #888;
-    width: 48px;
-    height: 48px;
-    margin: 10px 10px 10px 0;
-}
-
-.place-small {
-    width: 24px;
-    height: 24px;
-    margin: 0 0 0 5px;
-}
-
-.placesq {
-    border: 1px dashed #888;
-    width: 48px;
-    height: 48px;
-    margin: 10px 10px 10px 0;
-}
-
-.placesq-small {
-    width: 24px;
-    height: 24px;
-    margin: 0 0 0 5px;
-}
-
-.stuff-item {
-    width: 80px;
-    height: 80px;
-    padding: 10px;
-    margin: 10px 0 10px 10px;
-    color: white;
-    cursor: move;
-}
-
-.left {
-    float: left;
-}
-
-.right {
-    float: right;
-}
-
-
-button {
-    border: 0;
-    background-color: var(--dark-color);
-    color: white;
-    padding: 3px 10px 3px 10px;
-}
-
-#framework_container {
-    visibility: hidden;
-}
-
-.storyline {
-    position: relative;
-    height: 600px;
-}
-
-.editor-toolbar {
-    display: flex;
-    flex-direction: row;
-    position: absolute;
-    z-index: 99;
-}
-
-.editor-canvas {
-    position: absolute;
-}
-
-.editor-mid {
-    display: flex;
-    flex-direction: row;
-    padding: 30px 10px 220px 10px;
-    position: absolute;
-    top: 0;
-    left: 0;
-}
-/* 
-.timeline-labels {
-    position: relative;
-    width: 50px;
-    color: var(--light-color);
-    z-index: 9;
-}
-
-.timeline-labels .major {
-    position: absolute;
-    top: 42px;
-}
-
-.timeline-labels .minor {
-    position: absolute;
-    top: 112px;
-}
-
-.timeline-labels .center-line {
-    border-top: 1px dotted var(--light-color);
-    width: 600px;
-    height: 1px;
-    margin: 103px 0 0 35px;
-} */
-
-
-.section {
-    width: 257px;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-}
-
-.section .characters,
-.section .settings,
-.section .text1,
-.section .text2 {
-    background: rgb(0,0,0,.4);
-}
-
-.section.selected .characters,
-.section.selected .settings,
-.section.selected .text1,
-.section.selected .text2 {
-    background-color: var(--selected-bg);
-}
-
-.section .characters {
-    width: 100%;
-    height: 207px;
-    margin: 0 0 10px 0;
-}
-
-.section .settings {
-    width: 100%;
-    height: 44px;
-    margin: 0 0 20px 0;
-    display: flex;
-    flex-direction: row;
-}
-
-.section .text1 {
-    width: 100%;
-    height: 150px;
-    margin: 0 0 10px 0;
-    font-size: 14px;
-}
-
-.section .text2 {
-    width: 100%;
-    height: 64px;
-    margin: 0 0 20px 0;
-}
-
-.section .label {
-    color: white;
-}
-
-.section .description {
-    top: 180px;
-    width: 100%;
-    text-align: center;
-    font-size: 14px;
-}
-
-.section .description span {
-    font-size: 14px;
-}
-
-.dragger {
-    width: 10px;
-    cursor: col-resize;
 }

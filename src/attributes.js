@@ -15,7 +15,7 @@ export class StoryAttributes extends Component {
         this.objects = new Selected({ parent: col1, class: 'picker-list' }, [], PickerCell);
 
         var col2 = div(this.el, 'col2');
-        this.frameEl = div(col2, '');
+        this.frameEl = div(col2, 'small-title');
         this.formsEl = $$({ parent: col2 });
 
         this.objects.addListener('change', (value) => {
@@ -65,6 +65,11 @@ export class StoryAttributes extends Component {
             form.addListener('change', e => {
                 e.frame = this.frame;
                 this.emit('change', e);
+            });
+            form.addListener('delete', e=>{
+                this.frame.data.removeCharacter(e.id);
+                this.frame.redrawCharacters();
+                this.select({frame: this.frame, fortune: -1});
             });
         }
     }
@@ -161,20 +166,9 @@ export class CharacterForm extends Component {
         var delEl = $$mi({ parent: $r6, text: 'delete' });
         delEl.addEventListener('click', e => {
             this.el.style.opacity = .5;
-            // this.parent.services.Picker.Delete([this.value.id]).then(results => {
-            //     this.el.innerText = '';
-            //     this.emit('deleted');
-            // });
+            this.emit('delete', this.selected);
         });
 
-        // delete
-        // this.parent.services.Picker.Delete(idsOfSelected).then(results => {
-        // });
-
-        //
-        // this.icons.addListener('change', this.setValueFromUi.bind(this));
-        // this.nameEl.addEventListener('keyup', this.setValueFromUi.bind(this));
-        // this.descriptionEl.addEventListener('keyup', this.setValueFromUi.bind(this));
     }
 
     setValueFromUi() {
