@@ -45,7 +45,7 @@ export class Studio extends Component {
         this.timeline = new Timeline(this.document);
         this.editor = new StoryAttributes(this, this.timeline, this.document);
         this.draft = new Draft(this, this.document);
-        // this.player = new Preview(this);
+        this.player = new Preview(this);
 
         this.genre.addListener('change', e => {
             this.document.setAttributes(e);
@@ -63,12 +63,12 @@ export class Studio extends Component {
             e.frame.addCharacter(e.character, e.fortune, e.conflict); // might be better to update document 
             // and redraw timeline
         });
-        // this.player.addListener('previous', e => {
-        //     this.timeline.gotoFrame(this.timeline.timeZ.destination - 1);
-        // });
-        // this.player.addListener('next', e => {
-        //     this.timeline.gotoFrame(this.timeline.timeZ.destination + 1);
-        // });
+        this.player.addListener('previous', e => {
+            this.timeline.gotoFrame(this.timeline.timeZ.destination - 1);
+        });
+        this.player.addListener('next', e => {
+            this.timeline.gotoFrame(this.timeline.timeZ.destination + 1);
+        });
         this.mainTabs.addListener('change', value => {
             this.redraw();
         });

@@ -70,14 +70,22 @@ export class Timeline extends Component {
         this.scene.add(this.rolloverDisc);
     }
 
+
     setupRenderer() {
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(window.devicePixelRatio ? window.devicePixelRatio : 1);
-        renderer.setAnimationLoop(animation);
         renderer.outputColorSpace = THREE.SRGBColorSpace;
 
         var self = this;
+
+        // window resize handling
+        function onWindowResize() {
+            self.camera.aspect = window.innerWidth / window.innerHeight;
+            self.camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            console.log("I AM HERE");
+        }
 
         // animation & mouse handling
         function animation(time) {
@@ -102,6 +110,12 @@ export class Timeline extends Component {
         document.body.appendChild(renderer.domElement);
         document.addEventListener('mousemove', onDocumentMouseMove, false);
         document.addEventListener('click', onDocumentClick, false);
+
+        window.addEventListener( 'resize', onWindowResize, false );
+
+        renderer.setAnimationLoop(animation);
+
+
     }
 
     onClick() {
@@ -347,7 +361,7 @@ class Disc extends UX3D {
             }
         }
         else {
-            points.push(new THREE.Vector3(0,  2, 0));
+            points.push(new THREE.Vector3(0, 2, 0));
             points.push(new THREE.Vector3(-2, 2, 0));
         }
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -595,7 +609,6 @@ function inObjArrayWithId(array, obj) {
     return -1;
 }
 /*
-
     setUpMouseHander(canvas,doMouseDown,doMouseMove);
     setUpTouchHander(canvas,doMouseDown,doMouseMove);
 */

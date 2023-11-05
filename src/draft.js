@@ -3,7 +3,7 @@ import { getInstructions } from './prompts.js'
 
 export class Draft extends Component {
     constructor(parent, doc) {
-        super({ parent: $('picker'), class: 'draft' });
+        super({ parent: $('picker'), class: 'draft' }, parent);
         this.document = doc;
         this.draw();
     }
@@ -14,8 +14,19 @@ export class Draft extends Component {
 
     visible(b) {
         super.visible(b);
-        var o = this.document.toSimpleObject();
-        this.title.innerText = getInstructions(o);
+        if (b) {
+            var o = this.document.toSimpleObject();
+            var i = getInstructions(o);
+            console.log(i);
+            this.title.innerText = i;
+                this.parent.services.GPT.Test({ messages: [{ role: 'user', content: i }] })
+                .then((result) => {
+                    // var finish_reason = result.data.response.choices[0].finish_reason;
+                    var message = result.data.response.choices[0].message;
+                    console.log(message.content);
+                    this.title.innerText = message.content;
+                });
+        }
     }
 
 

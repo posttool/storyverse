@@ -70,15 +70,15 @@ export class Document {
             frames: this.frames.slice(0, lastFrame+1).map(frame => {
                 return {
                     index: (frame.index + 1),
-                    setting: frame.setting ? this.nouns[frame.setting].name : 'None specified',
+                    setting: frame.setting ? this.nouns[frame.setting].name : null,
                     characters: frame.characters.map(character => {
                         var conflictType = (character.conflict == '-1' || character.conflict == null) ? null :
-                            (character.id == character.conflict) ? 'Internal' : 'External';
+                            (character.id == character.conflict) ? 'internal' : 'external';
                         return {
                             name: this.nouns[character.id].name,
                             fortune: FORTUNES[character.fortune].name,
                             conflict: conflictType,
-                            conflictName: (conflictType == 'External') ? this.nouns[character.conflict].name : null
+                            conflictName: (conflictType == 'external') ? this.nouns[character.conflict].name : null
                         }
                     })
                 }
