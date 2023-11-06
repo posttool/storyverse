@@ -148,39 +148,7 @@ const JSON = `Only provide a RFC8259 compliant JSON response following this form
         "appearance": "Description of how the setting looks like for the characters"
       }
     },
-    "conflict_description": "",
-    "dialog": [
-      {
-        "name": "character 1",
-        "prompt": ""
-      },
-      {
-        "name": "character 2",
-        "prompt": ""
-      },
-      {
-        "name": "character 1",
-        "prompt": ""
-      },
-      {
-        "name": "character 3",
-        "prompt": ""
-      }
-    ],
-    "fortune": [
-      {
-        "name": "character 1",
-        "description": "Never say the Fortune attribute numerically, translate it into words that reflect the character state in the story so far""
-      },
-      {
-        "name": "character 2",
-        "description": "Never say the Fortune attribute numerically, translate it into words that reflect the character state in the story so far""
-      }
-      {
-        "name": "between characters ",
-        "description": "Describe the relationship between the characters. Reflect their state of Fortune in your writing"
-      }
-    ]
+    "conflict_description": "An explanation about the conflict"
   ]
 }
 The JSON response:`

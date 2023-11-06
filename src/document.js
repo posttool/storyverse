@@ -5,6 +5,7 @@ export class Document {
         this.nouns = {};
         this.frames = [];
         this.title;
+        this.subtitle;
         this.framework;
         this.tone;
 
@@ -67,12 +68,12 @@ export class Document {
                     description: this.nouns[id].description
                 }
             }),
-            frames: this.frames.slice(0, lastFrame+1).map(frame => {
+            frames: this.frames.slice(0, lastFrame + 1).map(frame => {
                 return {
                     index: (frame.index + 1),
                     setting: frame.setting ? this.nouns[frame.setting].name : null,
                     characters: frame.characters.map(character => {
-                        var conflictType = (character.conflict == '-1' || character.conflict == null) ? null :
+                        var conflictType = (character.conflict == null) ? null :
                             (character.id == character.conflict) ? 'internal' : 'external';
                         return {
                             name: this.nouns[character.id].name,
@@ -93,13 +94,16 @@ export class FrameData {
         this.index = index;
         this.characters = [];
         this.setting = null;
+        this.title = null;
+        this.emoji = null;
+        this.summary = null;
     }
 
     addCharacter(id, fortune, conflict) {
         this.characters.push(new CharacterData(this, id, fortune, conflict));
     }
 
-    removeCharacter(id){
+    removeCharacter(id) {
         for (var i = 0; i < this.characters.length; i++) {
             if (this.characters[i].id == id) {
                 this.characters.splice(i, 1);
@@ -127,6 +131,15 @@ export class FrameData {
         return null;
     }
 
+    getByName(name) {
+        for (var i = 0; i < this.characters.length; i++) {
+            if (this.document.nouns[this.characters[i].id].name == name) {
+                return this.characters[i];
+            }
+        }
+        return null;
+    }
+
     getIds() {
         var map = {};
         for (var i = 0; i < this.characters.length; i++) {
@@ -141,7 +154,26 @@ export class CharacterData {
         this.frame = frame;
         this.id = id; //doc id
         this.fortune = fortune;
-        this.conflict = conflict; //null/-1 or doc id
+        if (conflict == -1 || conflict == '-1') {
+            conflict = null;
+        }
+        this.conflict = conflict; //null or doc id
+        this.point_of_view = null;
+        this.attitude = null;
+        this.fortune_summary = null;
+    }
+
+    doc() {
+        return this.frame.document.getById(this.id);
+    }
+}
+
+export class SettingData {
+    constructor(frame, id,) {
+        this.frame = frame;
+        this.id = id; //doc id
+        this.description = null;
+        this.sentory_details = { feel: null, smell: null, sound: null, appearance: null };
     }
 
     doc() {

@@ -19,13 +19,10 @@ export class Preview extends Component {
     }
 
     draw() {
-        this.toolbarEl = div(this.el);
-        this.text = div(this.el);
-        this.controlEl = div(this.el, 'controls');
-        var rr = $$mi({ parent: this.controlEl, text: 'fast_rewind' });
-        var play = $$mi({ parent: this.controlEl, text: 'play_arrow' });
-        var ff = $$mi({ parent: this.controlEl, text: 'fast_forward' });
-        this.frameEl = div(this.controlEl, '', '0');
+        var r0 = div(this.el, 'controls');
+        var rr = $$mi({ parent: r0, text: 'fast_rewind' });
+        var play = $$mi({ parent: r0, text: 'play_arrow' });
+        var ff = $$mi({ parent: r0, text: 'fast_forward' });
 
         rr.addEventListener('click', (e) => { 
             this.emit('previous');
@@ -36,27 +33,30 @@ export class Preview extends Component {
         ff.addEventListener('click', (e) => { 
             this.emit('next');
         });
-        document.addEventListener('keyup', e=>{
-            if (e.key == 'ArrowLeft'|| e.key=='ArrowDown') {
-                this.emit('previous');
-            } else if (e.key == 'ArrowRight' || e.key=='ArrowUp') {
-                this.emit('next');
-            }
-        });
+        // document.addEventListener('keyup', e=>{
+        //     if (e.key == 'ArrowLeft'|| e.key=='ArrowDown') {
+        //         this.emit('previous');
+        //     } else if (e.key == 'ArrowRight' || e.key=='ArrowUp') {
+        //         this.emit('next');
+        //     }
+        // });
+        
+        var r1 = div(this.el, '');
+        this.title = div(r1, 'title', '');
+        this.emoji = div(r1, 'title', '');
+        this.summary = div(r1, '', '');
+
+
     }
 
-    update(){
-        this.frameEl.innerText = "Frame "+(this.frame+1);
+    select(e) {
+        
+        this.title.innerText = e.frame.data.title;
+        this.emoji.innerText = e.frame.data.emoji;
+        this.summary.innerText = e.frame.data.summary;
+   
     }
 
 
-    // this.frameworkSelect = $$sel({ parent: $top, options: FRAMEWORKS.map(c => c.name) });
-    // this.frameworkSelect.addEventListener('change', this.rewrite.bind(this))
-    // this.toneSelect = $$sel({ parent: $top, options: TONE.map(c => c.name) });
-    // this.toneSelect.addEventListener('change', this.rewrite.bind(this))
-
-
-    // var framework = this.frameworkSelect.options[this.frameworkSelect.selectedIndex].text;
-    // var tone = this.toneSelect.options[this.toneSelect.selectedIndex].text;
 
 }

@@ -38,41 +38,50 @@ export class Studio extends Component {
         $("main-tabs").innerHTML = '';
         this.mainTabs = new MainTabs(this);
         this.mainTabs.selected = PICKER; // TODO save/restore state
+        this.mainTabs.addListener('change', value => {
+            this.redraw();
+        });
+
 
         this.genre = new Genre();
-        this.document.setAttributes(this.genre.value)
-        this.picker = new Picker(this, this.document);
-        this.timeline = new Timeline(this.document);
-        this.editor = new StoryAttributes(this, this.timeline, this.document);
-        this.draft = new Draft(this, this.document);
-        this.player = new Preview(this);
-
         this.genre.addListener('change', e => {
             this.document.setAttributes(e);
         });
+        this.document.setAttributes(this.genre.value)
+
+        this.picker = new Picker(this, this.document);
         this.picker.addListener('select', e => {
             this.timeline.placingData = e;
         });
+
+        this.timeline = new Timeline(this.document);
         this.timeline.addListener('select', e => {
             this.editor.select(e);
+            this.player.select(e);
         });
         this.timeline.addListener('place', e => {
             console.log(e);
         });
+
+        this.editor = new StoryAttributes(this, this.timeline, this.document);
         this.editor.addListener('change', e => {
             e.frame.addCharacter(e.character, e.fortune, e.conflict); // might be better to update document 
             // and redraw timeline
         });
+
+        this.draft = new Draft(this, this.document);
+        this.draft.addListener('generate', ss => {
+            this.player.redraw();
+        });
+
+        this.player = new Preview(this);
         this.player.addListener('previous', e => {
             this.timeline.gotoFrame(this.timeline.timeZ.destination - 1);
         });
         this.player.addListener('next', e => {
             this.timeline.gotoFrame(this.timeline.timeZ.destination + 1);
         });
-        this.mainTabs.addListener('change', value => {
-            this.redraw();
-        });
-
+        
         this.picker.load();
         this.redraw();
 

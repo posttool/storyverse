@@ -16,6 +16,8 @@ export class StoryAttributes extends Component {
 
         var col2 = div(this.el, 'col2');
         this.frameEl = div(col2, 'small-title');
+        this.info = div(col2, '');
+
         this.formsEl = $$({ parent: col2 });
 
         this.objects.addListener('change', (value) => {
@@ -23,7 +25,6 @@ export class StoryAttributes extends Component {
         });
 
     }
-
 
     select(e) {
         this.frame = e.frame;
@@ -47,9 +48,10 @@ export class StoryAttributes extends Component {
         if (this.nouns) {
             this.objects.value = this.nouns;
             this.objects.selected = this.character;
-            this.frameEl.innerText = "Scene " + this.frame.index ;
-            if (this.nouns.length==0) 
-                this.frameEl.innerText += " (empty)"
+            // this.frameEl.innerText = "Scene " + (this.frame.index +1) ;
+            // this.info.innerText = this.frame.data.title+"\n"+this.frame.data.emoji+"\n"+this.frame.data.summary;
+            // if (this.nouns.length==0) 
+            //     this.frameEl.innerText += " (empty)"
             this.showCharacterForm();
         }
     }
@@ -142,12 +144,12 @@ export class CharacterForm extends Component {
     }
 
     draw() {
-        var $r2 = $$({ parent: this.el, class: 'row' });
+        var $r2 = div(this.el, 'row' );
         this.fortuneEl = $$sel({ parent: $r2, options: FORTUNES.map(o => o.name) });
         this.fortuneEl.addEventListener('change', e => {
             this.setValueFromUi();
         });
-        var $r3 = $$({ parent: this.el, class: 'row' });
+        var $r3 =  div(this.el, 'row' );
         var conflictOptions = [['No conflict', '-1']];
         for (var i = 0; i < this.conflicts.length; i++) {
             var doc = this.conflicts[i].doc();
@@ -157,17 +159,21 @@ export class CharacterForm extends Component {
         this.conflictEl.addEventListener('change', e => {
             this.setValueFromUi();
         })
-        // var $r4 = $$({ parent: this.el, class: 'row' });
+        // var $r4 = div(this.el, 'row' );
         // this.colors = new Colors($r4);
 
-        // var $r5 = $$({ parent: this.el, class: 'row' });
-
-        var $r6 = $$({ parent: this.el, class: 'row' });
+        var $r6 = div(this.el, 'row' );
         var delEl = $$mi({ parent: $r6, text: 'delete' });
         delEl.addEventListener('click', e => {
             this.el.style.opacity = .5;
             this.emit('delete', this.selected);
         });
+
+        var $r5 = div(this.el, '' );
+        div($r5, '', this.selected.point_of_view);
+        div($r5, '', this.selected.attitude);
+        div($r5, '', this.selected.summary);
+
 
     }
 
