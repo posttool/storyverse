@@ -69,8 +69,8 @@ export class Draft extends Component {
             frame.title = genChapter.title;
             frame.emoji = genChapter.emoji;
             frame.summary = genChapter.summary;
-            frame.setting = genChapter.setting;
-            frame.conflict_resolution = genChapter.conflict_resolution;
+            frame.setting_info = genChapter.setting;
+            frame.conflict_description = genChapter.conflict_description;
             for (var j=0; j<genChapter.characters.length; j++) {
                 var genChar = genChapter.characters[j];
                 var cd = frame.getByName(genChar.name);

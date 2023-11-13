@@ -54,9 +54,9 @@ export class Preview extends Component {
         this.title.innerText = this.value.title;
         this.emoji.innerText = this.value.emoji;
         this.summary.innerText = this.value.summary;
-        if (this.value.setting) {
-            this.setting.innerText = this.value.setting.description;
-            var s = this.value.setting.sensory_details;
+        if (this.value.setting_info) {
+            this.setting.innerText = this.value.setting_info.description;
+            var s = this.value.setting_info.sensory_details;
             this.sensing.innerText = s.feel + '. ' + s.smell + '. ' + s.sound + '. ' + s.appearance + '.';
         }
         this.conflict.innerText = this.value.conflict_description;

@@ -97,8 +97,8 @@ export class FrameData {
         this.title = null;
         this.emoji = null;
         this.summary = null;
-        this.setting = null;
-        this.conflict_resolution = null;
+        this.setting_info = null;
+        this.conflict_description = null;
 }
 
     addCharacter(id, fortune, conflict) {
