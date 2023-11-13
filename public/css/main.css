@@ -6,8 +6,6 @@
         'opsz' 48
 }
 
-
-
 :root {
     --bg-color: #fff;
     --dark-color: #1f1f1f;
@@ -41,12 +39,6 @@
     font-size: 24px;
     color: white;
 }
-
-html {}
-
-body {}
-
-#root {}
 
 .workspace .col1,
 .workspace .col2 {
@@ -122,26 +114,6 @@ body {}
     padding-top: 12px;
 }
 
-
-/* .picker-toolbar {
-    display: flex;
-    flex-direction: row-reverse;
-    align-items: center;
-    position: relative;
-    top: -28px;
-    left: 182px;
-    width: 70px;
-    height: 0;
-}
-
-.picker-toolbar .title {
-    width: 80%;
-    color: #FFF;
-    font-size: 30px;
-    font-style: normal;
-    font-weight: 100;
-    letter-spacing: -1.8px;
-} */
 
 .picker-list {
     height: 230px;
@@ -331,4 +303,12 @@ textarea {
 
 .icon-choice.selected {
     border: 3px solid white;
+}
+
+
+
+.pp {
+    max-width: 340px;
+    margin-right: 15%;
+    font-size: 13px;
 }

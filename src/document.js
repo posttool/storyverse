@@ -97,7 +97,9 @@ export class FrameData {
         this.title = null;
         this.emoji = null;
         this.summary = null;
-    }
+        this.setting = null;
+        this.conflict_resolution = null;
+}
 
     addCharacter(id, fortune, conflict) {
         this.characters.push(new CharacterData(this, id, fortune, conflict));

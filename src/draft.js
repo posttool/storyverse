@@ -18,7 +18,7 @@ export class Draft extends Component {
         });
 
         var $r1 = div(this.el, 'row');
-        this.title = div($r1, '', 'title')
+        this.title = div($r1, 'pp', 'Click to generate')
     }
 
     redraw() {
@@ -29,13 +29,17 @@ export class Draft extends Component {
     }
 
     generateStory() {
+        var o = this.document.toSimpleObject();
+        if (o.characters.length==0) {
+            this.title.innerText = 'Add characters first';
+            return;
+        }
         if (this.generating) {
             console.log('busy...')
             return;
         }
         this.generating = true;
         this.redraw();
-        var o = this.document.toSimpleObject();
         var i = getInstructions(o);
         console.log(i);
         this.title.innerText = i;
@@ -44,6 +48,9 @@ export class Draft extends Component {
                 this.generating = false;
                 // var finish_reason = result.data.response.choices[0].finish_reason;
                 var message = result.data.response.choices[0].message;
+                if (message.content.indexOf("```json")==0) {
+                    message.content = message.content.substring(7, message.content.length-3);
+                }
                 console.log(message.content);
                 this.writing = JSON.parse(message.content);
                 this.redraw();
@@ -62,6 +69,8 @@ export class Draft extends Component {
             frame.title = genChapter.title;
             frame.emoji = genChapter.emoji;
             frame.summary = genChapter.summary;
+            frame.setting = genChapter.setting;
+            frame.conflict_resolution = genChapter.conflict_resolution;
             for (var j=0; j<genChapter.characters.length; j++) {
                 var genChar = genChapter.characters[j];
                 var cd = frame.getByName(genChar.name);

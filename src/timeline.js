@@ -3,7 +3,7 @@ import { ICON_BASEPATH } from './icons';
 import { Component } from './utils';
 import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
-import { MeshLine, MeshLineMaterial, MeshLineRaycast } from 'three.meshline';
+import { MeshLine, MeshLineMaterial } from 'three.meshline';
 
 
 
@@ -121,7 +121,6 @@ export class Timeline extends Component {
     onClick() {
         switch (this.mode) {
             case MODE_PLACING:
-                this.getIntersections();
                 if (this.placingData && this.frame && this.lane) {
                     this.frame.addCharacter(this.placingData, this.lane.fortune);
                     // this.renderFortuneCurves();
@@ -134,6 +133,7 @@ export class Timeline extends Component {
                 break;
         }
 
+        this.selectedFrame = this.frame;
         if (this.frame) {
             this.emit('select', {
                 frame: this.frame,
@@ -265,9 +265,13 @@ export class Timeline extends Component {
                 oo.hilight(false);
             });
         }
+       
         this.getIntersections();
         if (this.intersections) {
             this.intersections.forEach(i => i.object.parent.parent.hilight(true));
+        }
+        if (this.selectedFrame) {
+            this.frames.children.forEach(f => f.selectedMesh.visible = (f == this.selectedFrame));
         }
         this.redrawPlaceholders();
         this.camera.position.y = this.cameraY.next();
@@ -413,7 +417,7 @@ class Lane extends UX3D {
     }
 }
 
-/** a single frame in the timeline, will hold any number of unique characters with fortunes  */
+/** a single frame in the timeline, unique characters with fortunes  */
 class Frame extends UX3D {
     constructor(i, w, h, d, f) {
         super();
@@ -426,11 +430,21 @@ class Frame extends UX3D {
     }
 
     draw() {
-
         this.frameIcon = getSprite(ICON_BASEPATH + 'clapper.png');
         this.frameIcon.position.set(- this.width / 2 - 1, .5, 0);
         this.add(this.frameIcon);
 
+        var frameLabelSelected = new TextGeometry('Scene',
+            { font: this.font, size: 1, height: .1, curveSegments: 12 });
+        var textMesh0 = new THREE.Mesh(frameLabelSelected,
+            new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, opacity: 1, transparent: true })
+        );
+        textMesh0.position.x = -this.width / 2 - 7.5;
+        textMesh0.position.y = -.5;
+        this.add(textMesh0);
+        this.selectedMesh = textMesh0;
+        this.selectedMesh.visible = false;
+    
         this.frameLabel = new TextGeometry('' + (this.index + 1),
             { font: this.font, size: 1, height: .1, curveSegments: 12 });
         // this.frameLabel.computeBoundingBox();
@@ -608,156 +622,3 @@ function inObjArrayWithId(array, obj) {
     }
     return -1;
 }
-/*
-    setUpMouseHander(canvas,doMouseDown,doMouseMove);
-    setUpTouchHander(canvas,doMouseDown,doMouseMove);
-*/
-
-
-
-// function setUpMouseHander(element, mouseDownFunc, mouseDragFunc, mouseUpFunc) {
-//     /*
-//            element -- either the element itself or a string with the id of the element
-//            mouseDownFunc(x,y,evt) -- should return a boolean to indicate whether to start a drag operation
-//            mouseDragFunc(x,y,evt,prevX,prevY,startX,startY)
-//            mouseUpFunc(x,y,evt,prevX,prevY,startX,startY)
-//        */
-//     if (!element || !mouseDownFunc || !(typeof mouseDownFunc == "function")) {
-//         throw "Illegal arguments in setUpMouseHander";
-//     }
-//     if (typeof element == "string") {
-//         element = document.getElementById(element);
-//     }
-//     if (!element || !element.addEventListener) {
-//         throw "first argument in setUpMouseHander is not a valid element";
-//     }
-//     var dragging = false;
-//     var startX, startY;
-//     var prevX, prevY;
-
-//     function doMouseDown(evt) {
-//         if (dragging) {
-//             return;
-//         }
-//         var r = element.getBoundingClientRect();
-//         var x = evt.clientX - r.left;
-//         var y = evt.clientY - r.top;
-//         prevX = startX = x;
-//         prevY = startY = y;
-//         dragging = mouseDownFunc(x, y, evt);
-//         if (dragging) {
-//             document.addEventListener("mousemove", doMouseMove);
-//             document.addEventListener("mouseup", doMouseUp);
-//         }
-//     }
-
-//     function doMouseMove(evt) {
-//         if (dragging) {
-//             if (mouseDragFunc) {
-//                 var r = element.getBoundingClientRect();
-//                 var x = evt.clientX - r.left;
-//                 var y = evt.clientY - r.top;
-//                 mouseDragFunc(x, y, evt, prevX, prevY, startX, startY);
-//             }
-//             prevX = x;
-//             prevY = y;
-//         }
-//     }
-
-//     function doMouseUp(evt) {
-//         if (dragging) {
-//             document.removeEventListener("mousemove", doMouseMove);
-//             document.removeEventListener("mouseup", doMouseUp);
-//             if (mouseUpFunc) {
-//                 var r = element.getBoundingClientRect();
-//                 var x = evt.clientX - r.left;
-//                 var y = evt.clientY - r.top;
-//                 mouseUpFunc(x, y, evt, prevX, prevY, startX, startY);
-//             }
-//             dragging = false;
-//         }
-//     }
-//     element.addEventListener("mousedown", doMouseDown);
-// }
-
-// function setUpTouchHander(element, touchStartFunc, touchMoveFunc, touchEndFunc, touchCancelFunc) {
-//     /*
-//            element -- either the element itself or a string with the id of the element
-//            touchStartFunc(x,y,evt) -- should return a boolean to indicate whether to start a drag operation
-//            touchMoveFunc(x,y,evt,prevX,prevY,startX,startY)
-//            touchEndFunc(evt,prevX,prevY,startX,startY)
-//            touchCancelFunc()   // no parameters
-//        */
-//     if (!element || !touchStartFunc || !(typeof touchStartFunc == "function")) {
-//         throw "Illegal arguments in setUpTouchHander";
-//     }
-//     if (typeof element == "string") {
-//         element = document.getElementById(element);
-//     }
-//     if (!element || !element.addEventListener) {
-//         throw "first argument in setUpTouchHander is not a valid element";
-//     }
-//     var dragging = false;
-//     var startX, startY;
-//     var prevX, prevY;
-
-//     function doTouchStart(evt) {
-//         if (evt.touches.length != 1) {
-//             doTouchEnd(evt);
-//             return;
-//         }
-//         evt.preventDefault();
-//         if (dragging) {
-//             doTouchEnd();
-//         }
-//         var r = element.getBoundingClientRect();
-//         var x = evt.touches[0].clientX - r.left;
-//         var y = evt.touches[0].clientY - r.top;
-//         prevX = startX = x;
-//         prevY = startY = y;
-//         dragging = touchStartFunc(x, y, evt);
-//         if (dragging) {
-//             element.addEventListener("touchmove", doTouchMove);
-//             element.addEventListener("touchend", doTouchEnd);
-//             element.addEventListener("touchcancel", doTouchCancel);
-//         }
-//     }
-
-//     function doTouchMove(evt) {
-//         if (dragging) {
-//             if (evt.touches.length != 1) {
-//                 doTouchEnd(evt);
-//                 return;
-//             }
-//             evt.preventDefault();
-//             if (touchMoveFunc) {
-//                 var r = element.getBoundingClientRect();
-//                 var x = evt.touches[0].clientX - r.left;
-//                 var y = evt.touches[0].clientY - r.top;
-//                 touchMoveFunc(x, y, evt, prevX, prevY, startX, startY);
-//             }
-//             prevX = x;
-//             prevY = y;
-//         }
-//     }
-
-//     function doTouchCancel() {
-//         if (touchCancelFunc) {
-//             touchCancelFunc();
-//         }
-//     }
-
-//     function doTouchEnd(evt) {
-//         if (dragging) {
-//             dragging = false;
-//             element.removeEventListener("touchmove", doTouchMove);
-//             element.removeEventListener("touchend", doTouchEnd);
-//             element.removeEventListener("touchcancel", doTouchCancel);
-//             if (touchEndFunc) {
-//                 touchEndFunc(evt, prevX, prevY, startX, startY);
-//             }
-//         }
-//     }
-//     element.addEventListener("touchstart", doTouchStart);
-// }
-

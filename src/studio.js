@@ -30,7 +30,6 @@ export class Studio extends Component {
             $("picker").innerHTML = '';
             $("editor").innerHTML = '';
         });
-
     }
 
     draw() {
@@ -42,12 +41,11 @@ export class Studio extends Component {
             this.redraw();
         });
 
-
         this.genre = new Genre();
         this.genre.addListener('change', e => {
             this.document.setAttributes(e);
         });
-        this.document.setAttributes(this.genre.value)
+        this.document.setAttributes(this.genre.value);
 
         this.picker = new Picker(this, this.document);
         this.picker.addListener('select', e => {
@@ -57,7 +55,8 @@ export class Studio extends Component {
         this.timeline = new Timeline(this.document);
         this.timeline.addListener('select', e => {
             this.editor.select(e);
-            this.player.select(e);
+            this.player.value = e.frame.data;
+            this.player.redraw();
         });
         this.timeline.addListener('place', e => {
             console.log(e);

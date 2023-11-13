@@ -31,14 +31,14 @@ export class StoryAttributes extends Component {
         this.character = this.frame.data.getById(this.frame.data.getByFortune(e.fortune)[0]);
         //
         this.nouns = [];
-        e.frame.data.characters.forEach(char => {
+        this.frame.data.characters.forEach(char => {
             this.nouns.push(char);
         });
 
         if (this.character == null && this.nouns.length != 0) {
             this.character = this.nouns[0];
         }
-        // if (e.frame.data.setting) {
+        // if (this.frame.data.setting) {
         //     this.nouns.push(this.frame.data.getById(e.frame.data.setting));
         // }
         this.redraw();
@@ -48,10 +48,6 @@ export class StoryAttributes extends Component {
         if (this.nouns) {
             this.objects.value = this.nouns;
             this.objects.selected = this.character;
-            // this.frameEl.innerText = "Scene " + (this.frame.index +1) ;
-            // this.info.innerText = this.frame.data.title+"\n"+this.frame.data.emoji+"\n"+this.frame.data.summary;
-            // if (this.nouns.length==0) 
-            //     this.frameEl.innerText += " (empty)"
             this.showCharacterForm();
         }
     }
@@ -84,10 +80,7 @@ export class StoryAttributes extends Component {
     }
 
 
-
 }
-
-
 
 
 
@@ -125,10 +118,7 @@ export class PickerCell extends Component {
             this.el.classList.remove('selected');
         }
     }
-
 }
-
-
 
 
 
@@ -169,12 +159,10 @@ export class CharacterForm extends Component {
             this.emit('delete', this.selected);
         });
 
-        var $r5 = div(this.el, '' );
+        var $r5 = div(this.el, 'pp' );
         div($r5, '', this.selected.point_of_view);
         div($r5, '', this.selected.attitude);
-        div($r5, '', this.selected.summary);
-
-
+        div($r5, '', this.selected.fortune_summary);
     }
 
     setValueFromUi() {

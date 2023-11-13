@@ -1,6 +1,4 @@
-import { $, $$ } from './utils.js';
 import { Studio } from './studio.js';
-import { Storyline } from './editor.js';
 
 import { initializeApp } from 'firebase/app';
 import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
@@ -30,4 +28,4 @@ var studio = new Studio({
         Update: httpsCallable(firebaseFunctions, 'PickerUpdate'),
         Delete: httpsCallable(firebaseFunctions, 'PickerDelete')
     }
-});
+}); 

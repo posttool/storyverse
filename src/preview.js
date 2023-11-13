@@ -24,13 +24,13 @@ export class Preview extends Component {
         var play = $$mi({ parent: r0, text: 'play_arrow' });
         var ff = $$mi({ parent: r0, text: 'fast_forward' });
 
-        rr.addEventListener('click', (e) => { 
+        rr.addEventListener('click', (e) => {
             this.emit('previous');
         });
-        play.addEventListener('click', (e) => { 
-            this.emit('play') 
+        play.addEventListener('click', (e) => {
+            this.emit('play')
         });
-        ff.addEventListener('click', (e) => { 
+        ff.addEventListener('click', (e) => {
             this.emit('next');
         });
         // document.addEventListener('keyup', e=>{
@@ -40,21 +40,26 @@ export class Preview extends Component {
         //         this.emit('next');
         //     }
         // });
-        
+
         var r1 = div(this.el, '');
         this.title = div(r1, 'title', '');
         this.emoji = div(r1, 'title', '');
-        this.summary = div(r1, '', '');
-
-
+        this.summary = div(r1, 'pp', '');
+        this.setting = div(r1, 'pp', '');
+        this.sensing = div(r1, 'pp', '');
+        this.conflict = div(r1, 'pp', '');
     }
 
-    select(e) {
-        
-        this.title.innerText = e.frame.data.title;
-        this.emoji.innerText = e.frame.data.emoji;
-        this.summary.innerText = e.frame.data.summary;
-   
+    redraw() {
+        this.title.innerText = this.value.title;
+        this.emoji.innerText = this.value.emoji;
+        this.summary.innerText = this.value.summary;
+        if (this.value.setting) {
+            this.setting.innerText = this.value.setting.description;
+            var s = this.value.setting.sensory_details;
+            this.sensing.innerText = s.feel + '. ' + s.smell + '. ' + s.sound + '. ' + s.appearance + '.';
+        }
+        this.conflict.innerText = this.value.conflict_description;
     }
 
 

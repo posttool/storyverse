@@ -11,9 +11,9 @@ admin.initializeApp();
 const db = admin.firestore();
 const bucket = admin.storage().bucket();
 
-// const MODEL = "gpt-4";
+const MODEL = "gpt-4-1106-preview";
 // const MODEL = "gpt-3.5-turbo";
-const MODEL = "gpt-3.5-turbo-16k";
+// const MODEL = "gpt-3.5-turbo-16k";
 // const MODEL = "text-davinci-003";
 // const MODEL = "text-curie-001";
 
