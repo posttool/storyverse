@@ -18,7 +18,13 @@ export class Studio extends Component {
     constructor(services) {
         super({ parent: null, class: 'studio' });
         this.services = services;
+
+
         this.document = new Document();
+        var d = localStorage.getItem("currentDoc");
+        if (d != null) {
+            this.document.fromJson(JSON.parse(d));
+        }
 
         this.account = new Account(this);
         this.account.addListener('login', e => {
@@ -48,6 +54,17 @@ export class Studio extends Component {
         this.document.setAttributes(this.genre.value);
 
         this.picker = new Picker(this, this.document);
+        this.picker.addListener('load', e => {
+            // if (e.length>1) {
+            //     var a = e[0];
+            //     var b = e[1];
+            //     this.document.frames[0].addCharacter(a.id, 3, b.id);
+            //     this.document.frames[0].addCharacter(b.id, 2);
+            //     this.timeline.redraw();
+            // }
+             this.timeline.redraw();
+
+        });
         this.picker.addListener('select', e => {
             this.timeline.placingData = e;
         });
@@ -57,15 +74,15 @@ export class Studio extends Component {
             this.editor.select(e);
             this.player.value = e.frame.data;
             this.player.redraw();
-        });
-        this.timeline.addListener('place', e => {
-            console.log(e);
+            this.saveDoc();
         });
 
         this.editor = new StoryAttributes(this, this.timeline, this.document);
         this.editor.addListener('change', e => {
-            e.frame.addCharacter(e.character, e.fortune, e.conflict); // might be better to update document 
+            if (e)// might be better to update document 
+               e.frame.addCharacter(e.character, e.fortune, e.conflict); 
             // and redraw timeline
+            this.saveDoc();
         });
 
         this.draft = new Draft(this, this.document);
@@ -80,7 +97,7 @@ export class Studio extends Component {
         this.player.addListener('next', e => {
             this.timeline.gotoFrame(this.timeline.timeZ.destination + 1);
         });
-        
+
         this.picker.load();
         this.redraw();
 
@@ -89,6 +106,10 @@ export class Studio extends Component {
                 this.timeline.deleteSelection();
             }
         });
+    }
+
+    saveDoc() {
+        localStorage.setItem("currentDoc", JSON.stringify(this.document.toSimpleObject()));
     }
 
     redraw() {

@@ -51,6 +51,7 @@ export class Picker extends Component {
                     self.dataChangeHandler(change);
                 });
                 self.redraw();
+                self.emit('load', self.objects.value);
             }, function (e) {
                 console.error('snapshot error Picker.load');
                 console.error(e);

@@ -68,6 +68,7 @@ export class StoryAttributes extends Component {
                 this.frame.data.removeCharacter(e.id);
                 this.frame.redrawCharacters();
                 this.select({frame: this.frame, fortune: -1});
+                this.emit('change', null);
             });
         }
     }

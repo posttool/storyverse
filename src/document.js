@@ -28,7 +28,9 @@ export class Document {
     }
 
     addFrame(index) {
-        this.frames.push(new FrameData(this, index));
+        var f =new FrameData(this, index);
+        this.frames.push(f);
+        return f;
     }
 
     getById(id) {
@@ -76,15 +78,35 @@ export class Document {
                         var conflictType = (character.conflict == null) ? null :
                             (character.id == character.conflict) ? 'internal' : 'external';
                         return {
+                            id: character.id,
                             name: this.nouns[character.id].name,
                             fortune: FORTUNES[character.fortune].name,
+                            fortune_index: character.fortune,
                             conflict: conflictType,
+                            conflict_id: character.conflict,
                             conflictName: (conflictType == 'external') ? this.nouns[character.conflict].name : null
                         }
                     })
                 }
             })
         };
+    }
+
+    fromJson(o) {
+        this.title = o.title;
+        this.subtitle = o.subtitle;
+        this.framework = o.framework;
+        this.tone = o.tone;
+        this.frames = []
+        o.frames.forEach((f,i)=>{
+            var frame = this.addFrame(i);
+            f.characters.forEach(c=>{
+                frame.addCharacter(c.id, c.fortune_index, c.conflict_id);
+            })
+        });
+        while (this.frames.length < 7) {
+            this.addFrame(this.frames.length-1);
+        }
     }
 }
 
@@ -166,7 +188,11 @@ export class CharacterData {
     }
 
     doc() {
-        return this.frame.document.getById(this.id);
+        let doc = this.frame.document.getById(this.id);
+        if (doc == null) {
+            console.log('no '+this.id);
+        }
+        return doc;
     }
 }
 

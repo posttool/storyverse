@@ -175,6 +175,12 @@ export class Timeline extends Component {
         this.root.add(this.curves);
     }
 
+    redraw() {
+        this.frames.children.forEach(frame=>{
+            frame.redrawCharacters();
+        })
+    }
+
     // renderFortuneCurves() {
     //     clearGroup(this.curves);
 
